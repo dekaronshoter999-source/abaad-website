@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" id="html-root">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abaad | مساحة العمل المتميزة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #C8A951;
+      --gold-light: #F0D98A;
+      --gold-dark: #9A7E35;
+      --navy: #07091A;
+      --navy-mid: #0E1427;
+      --navy-light: #1A2545;
+      --text-muted: #8A94B0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--navy);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    [dir="rtl"] body,
+    [dir="rtl"] .translatable { font-family: 'Noto Sans Arabic', sans-serif; }
+
+    /* Canvas */
+    #tower-canvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+
+    /* Layered gradient overlay */
+    #overlay {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(
+        to bottom,
+        rgba(7,9,26,0.25) 0%,
+        rgba(7,9,26,0.50) 30%,
+        rgba(7,9,26,0.80) 60%,
+        rgba(7,9,26,0.97) 100%
+      );
+      z-index: 1; pointer-events: none;
+    }
+
+    .above { position: relative; z-index: 2; }
+
+    /* Gold text gradient */
+    .gold-text {
+      background: linear-gradient(135deg, #C8A951 0%, #F0D98A 50%, #C8A951 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Glassmorphism card */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(200,169,81,0.18);
+      border-radius: 20px;
+      transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+    }
+    .glass:hover {
+      transform: translateY(-5px);
+      border-color: rgba(200,169,81,0.42);
+      box-shadow: 0 24px 64px rgba(200,169,81,0.10);
+    }
+
+    /* Offer card */
+    .offer-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02));
+      border: 1px solid rgba(200,169,81,0.22);
+      border-radius: 18px;
+      padding: 26px;
+      transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+    }
+    .offer-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(200,169,81,0.5);
+      box-shadow: 0 28px 72px rgba(200,169,81,0.12);
+    }
+
+    /* Form elements */
+    .form-input {
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      color: #fff;
+      border-radius: 12px;
+      padding: 14px 18px;
+      width: 100%;
+      font-size: 15px;
+      font-family: inherit;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: rgba(200,169,81,0.07);
+      box-shadow: 0 0 0 3px rgba(200,169,81,0.14);
+    }
+    .form-input::placeholder { color: rgba(255,255,255,0.28); }
+
+    /* Buttons */
+    .btn-gold {
+      background: linear-gradient(135deg, #C8A951 0%, #A07830 100%);
+      color: #07091A;
+      font-weight: 700;
+      font-size: 15px;
+      font-family: inherit;
+      border: none;
+      border-radius: 12px;
+      padding: 15px 32px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.28s ease;
+      letter-spacing: 0.03em;
+    }
+    .btn-gold:hover {
+      background: linear-gradient(135deg, #F0D98A 0%, #C8A951 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 35px rgba(200,169,81,0.38);
+    }
+    .btn-gold:active { transform: translateY(0); }
+    .btn-gold:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    /* Promo code chip */
+    .promo-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(200,169,81,0.12);
+      border: 1px dashed rgba(200,169,81,0.45);
+      border-radius: 9px; padding: 7px 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px; font-weight: 700;
+      color: var(--gold-light);
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .promo-chip:hover {
+      background: rgba(200,169,81,0.22);
+      border-color: rgba(200,169,81,0.75);
+    }
+
+    /* Expiry label */
+    .expiry-label {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px; border-radius: 20px;
+    }
+    .expiry-label.live {
+      background: rgba(80,220,120,0.13);
+      border: 1px solid rgba(80,220,120,0.3);
+      color: #60ea88;
+    }
+    .expiry-label.soon {
+      background: rgba(255,170,0,0.13);
+      border: 1px solid rgba(255,170,0,0.3);
+      color: #ffb020;
+    }
+
+    /* Dividers */
+    .gold-line {
+      width: 56px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto;
+    }
+
+    /* Navbar */
+    #navbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      background: rgba(7,9,26,0.75);
+      border-bottom: 1px solid rgba(200,169,81,0.12);
+      z-index: 100;
+      transition: background 0.3s;
+    }
+
+    /* Language toggle */
+    .lang-btn {
+      background: rgba(200,169,81,0.09);
+      border: 1px solid rgba(200,169,81,0.28);
+      color: var(--gold);
+      border-radius: 9px; padding: 6px 16px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .lang-btn:hover {
+      background: rgba(200,169,81,0.18);
+      border-color: var(--gold);
+    }
+
+    /* Stat counter */
+    .stat-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 40px; font-weight: 700;
+    }
+
+    /* Skeleton shimmer */
+    .skeleton {
+      background: linear-gradient(90deg,
+        rgba(255,255,255,0.04) 0%,
+        rgba(255,255,255,0.09) 50%,
+        rgba(255,255,255,0.04) 100%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position:  200% 0; }
+    }
+
+    /* Fade-up animation */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.8s ease both; }
+    .delay-1 { animation-delay: 0.15s; }
+    .delay-2 { animation-delay: 0.30s; }
+    .delay-3 { animation-delay: 0.45s; }
+    .delay-4 { animation-delay: 0.60s; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(90px);
+      background: rgba(14,20,39,0.9);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(200,169,81,0.35);
+      color: var(--gold-light);
+      padding: 12px 22px;
+      border-radius: 14px; font-size: 14px; font-weight: 500;
+      z-index: 999;
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* Pulse dot */
+    @keyframes pulse-ring {
+      0%   { transform: scale(1); opacity: 0.9; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+    .pulse-dot {
+      position: relative; display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--gold); border-radius: 50%;
+    }
+    .pulse-dot::after {
+      content: ''; position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--gold); border-radius: 50%;
+      animation: pulse-ring 1.8s ease infinite;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--navy); }
+    ::-webkit-scrollbar-thumb { background: rgba(200,169,81,0.28); border-radius: 3px; }
+
+    /* Phone CTA strip */
+    .phone-strip {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(200,169,81,0.07);
+      border: 1px solid rgba(200,169,81,0.2);
+      border-radius: 14px; padding: 13px 16px;
+      text-decoration: none;
+      transition: background 0.25s, border-color 0.25s;
+      cursor: pointer;
+    }
+    .phone-strip:hover {
+      background: rgba(200,169,81,0.14);
+      border-color: rgba(200,169,81,0.45);
+    }
+
+    /* RTL-safe flex row (never reversed) */
+    .row { display: flex; flex-direction: row; }
+    .row-between { display: flex; flex-direction: row; justify-content: space-between; }
+
+    /* Section spacing */
+    .section { padding: 80px 24px; }
+  </style>
+</head>
+<body>
+
+<!-- Three.js tower background -->
+<canvas id="tower-canvas"></canvas>
+<div id="overlay"></div>
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════ NAVBAR ═══════════════════════════════ -->
+<nav id="navbar" class="above">
+  <div style="max-width:1200px;margin:0 auto;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;">
+
+    <!-- Logo -->
+    <div class="row" style="align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;background:linear-gradient(135deg,#C8A951,#9A7E35);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:#07091A;">A</span>
+      </div>
+      <span class="translatable" style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#F0D98A;letter-spacing:0.04em;"
+            data-en="ABAAD" data-ar="أباد">ABAAD</span>
+    </div>
+
+    <!-- Nav links + lang toggle -->
+    <div class="row" style="align-items:center;gap:24px;">
+      <a href="#offers" class="translatable" style="font-size:14px;color:#8A94B0;text-decoration:none;transition:color 0.2s;"
+         data-en="Partner Offers" data-ar="عروض الشركاء"
+         onmouseover="this.style.color='#C8A951'" onmouseout="this.style.color='#8A94B0'">Partner Offers</a>
+      <button class="lang-btn" id="lang-btn" onclick="toggleLang()">عربي</button>
+    </div>
+
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+<section class="above section" style="min-height:100vh;display:flex;align-items:center;padding-top:100px;">
+  <div style="max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;">
+
+    <!-- Left copy -->
+    <div class="fade-up">
+      <!-- Location badge -->
+      <div class="row" style="align-items:center;gap:10px;margin-bottom:28px;display:inline-flex;padding:8px 18px;border-radius:50px;background:rgba(200,169,81,0.09);border:1px solid rgba(200,169,81,0.25);">
+        <span class="pulse-dot"></span>
+        <span class="translatable" style="font-size:13px;color:var(--gold);"
+              data-en="Al Malhum Tower · Riyadh" data-ar="برج المالحم · الرياض">Al Malhum Tower · Riyadh</span>
+      </div>
+
+      <h1 style="font-family:'Playfair Display',serif;font-size:clamp(38px,5vw,64px);font-weight:700;line-height:1.12;margin-bottom:24px;">
+        <span class="translatable" data-en="Premium" data-ar="مساحة عمل">Premium</span><br>
+        <span class="gold-text translatable" data-en="Workspace" data-ar="متميزة">Workspace</span><br>
+        <span style="font-size:clamp(22px,3vw,36px);color:rgba(255,255,255,0.75);" class="translatable"
+              data-en="Exclusive Offers Inside" data-ar="عروض حصرية بداخله">Exclusive Offers Inside</span>
+      </h1>
+
+      <p class="translatable" style="font-size:16px;line-height:1.75;color:var(--text-muted);max-width:460px;margin-bottom:36px;"
+         data-en="Abaad at Al Malhum Tower is where businesses thrive. Our curated partner brands offer exclusive deals for every visitor."
+         data-ar="أباد في برج المالحم هو المكان الذي تزدهر فيه الأعمال. تقدم علاماتنا التجارية الشريكة المختارة صفقات حصرية لكل زائر.">
+        Abaad at Al Malhum Tower is where businesses thrive. Our curated partner brands offer exclusive deals for every visitor.
+      </p>
+
+      <a href="#offers" class="row" style="display:inline-flex;align-items:center;gap:10px;padding:15px 34px;border-radius:14px;background:linear-gradient(135deg,#C8A951,#9A7E35);color:#07091A;font-weight:700;font-size:15px;text-decoration:none;transition:all 0.3s;"
+         onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 40px rgba(200,169,81,0.35)'"
+         onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <span class="translatable" data-en="View Partner Offers" data-ar="عرض عروض الشركاء">View Partner Offers</span>
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <!-- Right: lead capture form -->
+    <div class="glass fade-up delay-2" style="padding:36px;">
+      <div id="form-wrap">
+        <h2 class="translatable" style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;margin-bottom:8px;"
+            data-en="Claim Your Office Offer" data-ar="احصل على عرضك المكتبي">Claim Your Office Offer</h2>
+        <p class="translatable" style="font-size:14px;color:var(--text-muted);margin-bottom:28px;line-height:1.65;"
+           data-en="Share your details and our team will craft a personalized workspace offer — hourly, daily, or monthly."
+           data-ar="شارك بياناتك وسيضع فريقنا عرضاً مكتبياً مخصصاً — بالساعة أو اليوم أو الشهر.">
+          Share your details and our team will craft a personalized workspace offer — hourly, daily, or monthly.
+        </p>
+        <form id="lead-form" onsubmit="submitLead(event)">
+          <div style="margin-bottom:18px;">
+            <label class="translatable" style="display:block;font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px;"
+                   data-en="Full Name" data-ar="الاسم الكامل">Full Name</label>
+            <input id="f-name" type="text" class="form-input translatable-placeholder" required
+                   data-placeholder-en="Your name" data-placeholder-ar="اسمك الكامل"
+                   placeholder="Your name">
+          </div>
+          <div style="margin-bottom:26px;">
+            <label class="translatable" style="display:block;font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px;"
+                   data-en="Phone Number" data-ar="رقم الهاتف">Phone Number</label>
+            <input id="f-phone" type="tel" class="form-input translatable-placeholder" required
+                   data-placeholder-en="+966 5X XXX XXXX" data-placeholder-ar="+966 5X XXX XXXX"
+                   placeholder="+966 5X XXX XXXX">
+          </div>
+          <button type="submit" class="btn-gold" id="submit-btn">
+            <span class="translatable" data-en="Get My Exclusive Offer" data-ar="احصل على عرضي الحصري">Get My Exclusive Offer</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Success state -->
+      <div id="form-success" style="display:none;text-align:center;padding:20px 0;">
+        <div style="font-size:52px;margin-bottom:16px;">✨</div>
+        <h3 class="translatable" style="font-size:22px;font-weight:700;font-family:'Playfair Display',serif;margin-bottom:10px;"
+            data-en="You're all set!" data-ar="تم التسجيل!">You're all set!</h3>
+        <p class="translatable" style="font-size:14px;color:var(--text-muted);line-height:1.65;"
+           data-en="Our team will contact you soon with a tailored workspace offer."
+           data-ar="سيتواصل معك فريقنا قريباً بعرض مكتبي مخصص.">
+          Our team will contact you soon with a tailored workspace offer.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════ STATS BAR ══════════════════════════════ -->
+<div class="above" style="background:rgba(255,255,255,0.025);border-top:1px solid rgba(200,169,81,0.10);border-bottom:1px solid rgba(200,169,81,0.10);padding:40px 24px;">
+  <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:center;">
+    <div>
+      <div class="gold-text stat-number">100+</div>
+      <p class="translatable" style="font-size:13px;color:var(--text-muted);margin-top:4px;" data-en="Partner Companies" data-ar="شركة شريكة">Partner Companies</p>
+    </div>
+    <div style="border-left:1px solid rgba(200,169,81,0.15);border-right:1px solid rgba(200,169,81,0.15);">
+      <div class="gold-text stat-number">500+</div>
+      <p class="translatable" style="font-size:13px;color:var(--text-muted);margin-top:4px;" data-en="Daily Visitors" data-ar="زائر يومياً">Daily Visitors</p>
+    </div>
+    <div>
+      <div class="gold-text" style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;">Al Malhum</div>
+      <p class="translatable" style="font-size:13px;color:var(--text-muted);margin-top:4px;" data-en="Premium Tower · Riyadh" data-ar="برج المالحم · الرياض">Premium Tower · Riyadh</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════ PARTNER OFFERS ════════════════════════════ -->
+<section class="above section" id="offers">
+  <div style="max-width:1200px;margin:0 auto;">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:60px;" class="fade-up">
+      <div class="gold-line" style="margin-bottom:20px;"></div>
+      <h2 class="translatable" style="font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,44px);font-weight:700;margin-bottom:14px;"
+          data-en="Exclusive Partner Offers" data-ar="عروض الشركاء الحصرية">Exclusive Partner Offers</h2>
+      <p class="translatable" style="font-size:15px;color:var(--text-muted);max-width:520px;margin:0 auto;line-height:1.7;"
+         data-en="Our trusted partners have created special deals exclusively for Abaad visitors."
+         data-ar="أعدّ شركاؤنا الموثوقون صفقات خاصة حصرياً لزوار أباد.">
+        Our trusted partners have created special deals exclusively for Abaad visitors.
+      </p>
+    </div>
+
+    <!-- Grid -->
+    <div id="offers-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;">
+      <!-- Skeleton cards -->
+      <div class="offer-card" id="sk1">
+        <div class="skeleton" style="height:14px;width:90px;margin-bottom:14px;"></div>
+        <div class="skeleton" style="height:26px;width:160px;margin-bottom:18px;"></div>
+        <div class="skeleton" style="height:60px;margin-bottom:16px;"></div>
+        <div class="skeleton" style="height:38px;"></div>
+      </div>
+      <div class="offer-card" id="sk2">
+        <div class="skeleton" style="height:14px;width:90px;margin-bottom:14px;"></div>
+        <div class="skeleton" style="height:26px;width:160px;margin-bottom:18px;"></div>
+        <div class="skeleton" style="height:60px;margin-bottom:16px;"></div>
+        <div class="skeleton" style="height:38px;"></div>
+      </div>
+      <div class="offer-card" id="sk3">
+        <div class="skeleton" style="height:14px;width:90px;margin-bottom:14px;"></div>
+        <div class="skeleton" style="height:26px;width:160px;margin-bottom:18px;"></div>
+        <div class="skeleton" style="height:60px;margin-bottom:16px;"></div>
+        <div class="skeleton" style="height:38px;"></div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="no-offers" style="display:none;text-align:center;padding:80px 20px;">
+      <div style="font-size:60px;opacity:0.18;margin-bottom:16px;">🏢</div>
+      <p class="translatable" style="color:var(--text-muted);"
+         data-en="No active offers right now — check back soon!"
+         data-ar="لا توجد عروض نشطة الآن — تفقد مرة أخرى قريباً!">No active offers right now — check back soon!</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+<footer class="above" style="padding:40px 24px;text-align:center;border-top:1px solid rgba(200,169,81,0.10);">
+  <div class="row" style="justify-content:center;align-items:center;gap:12px;margin-bottom:14px;">
+    <div style="width:34px;height:34px;background:linear-gradient(135deg,#C8A951,#9A7E35);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+      <span style="font-family:'Playfair Display',serif;font-weight:900;font-size:16px;color:#07091A;">A</span>
+    </div>
+    <span class="translatable" style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#F0D98A;"
+          data-en="ABAAD" data-ar="أباد">ABAAD</span>
+  </div>
+  <p class="translatable" style="font-size:13px;color:#4A5470;" data-en="Premium Workspace · Al Malhum Tower, Riyadh" data-ar="مساحة عمل متميزة · برج المالحم، الرياض">
+    Premium Workspace · Al Malhum Tower, Riyadh
+  </p>
+  <p style="font-size:12px;color:#2E374F;margin-top:8px;">© 2024 Abaad Inc. All rights reserved.</p>
+</footer>
+
+
+<!-- ══════════════════════════════════ JS ══════════════════════════════════ -->
+<script>
+
+// ─────────────────────── FIREBASE CONFIG ───────────────────────
+// 🔥 STEP 1: Replace with your Firebase project values
+// How to get these:
+//   1. Go to https://console.firebase.google.com
+//   2. Create or open your project
+//   3. Click ⚙️ Settings > Project settings > Your apps > Add app (Web)
+//   4. Copy the firebaseConfig object values below
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBMil1i4ba4gIzpV4PGOUDZrPh5vWH3riI",
+  authDomain:        "abaad-39b3c.firebaseapp.com",
+  projectId:         "abaad-39b3c",
+  storageBucket:     "abaad-39b3c.firebasestorage.app",
+  messagingSenderId: "750678331728",
+  appId:             "1:750678331728:web:c3f4c7c5c678d87da51c55"
+};
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+
+
+// ─────────────────────── LANGUAGE ───────────────────────
+let lang = 'en';
+
+function toggleLang() {
+  lang = lang === 'en' ? 'ar' : 'en';
+  const html = document.getElementById('html-root');
+  const btn  = document.getElementById('lang-btn');
+
+  if (lang === 'ar') {
+    html.setAttribute('lang', 'ar');
+    html.setAttribute('dir', 'rtl');
+    btn.textContent = 'English';
+    document.body.style.fontFamily = "'Noto Sans Arabic', sans-serif";
+  } else {
+    html.setAttribute('lang', 'en');
+    html.setAttribute('dir', 'ltr');
+    btn.textContent = 'عربي';
+    document.body.style.fontFamily = "'Inter', sans-serif";
+  }
+
+  document.querySelectorAll('.translatable[data-' + lang + ']').forEach(el => {
+    el.textContent = el.dataset[lang];
+  });
+  document.querySelectorAll('.translatable-placeholder').forEach(el => {
+    el.placeholder = lang === 'ar' ? el.dataset.placeholderAr : el.dataset.placeholderEn;
+  });
+
+  renderOffers(); // re-render with new language
+}
+
+
+// ─────────────────────── LEAD FORM ───────────────────────
+async function submitLead(e) {
+  e.preventDefault();
+  const name  = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  if (!name || !phone) return;
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.querySelector('span').textContent = lang === 'en' ? 'Sending…' : 'جاري الإرسال…';
+
+  try {
+    await db.collection('leads').add({
+      name, phone, lang,
+      source: 'landing_page',
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('form-wrap').style.display = 'none';
+    document.getElementById('form-success').style.display = 'block';
+    // Apply language to success state
+    document.querySelectorAll('#form-success .translatable').forEach(el => {
+      if (el.dataset[lang]) el.textContent = el.dataset[lang];
+    });
+  } catch (err) {
+    console.error(err);
+    btn.disabled = false;
+    btn.querySelector('span').textContent = lang === 'en' ? 'Try Again' : 'حاول مجدداً';
+    toast(lang === 'en' ? 'Connection error — please try again.' : 'خطأ في الاتصال — يرجى المحاولة مرة أخرى.');
+  }
+}
+
+
+// ─────────────────────── OFFERS ───────────────────────
+let cachedOffers = [];
+
+function loadOffers() {
+  db.collection('offers')
+    .where('active', '==', true)
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      cachedOffers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderOffers();
+    }, err => {
+      console.warn('Firestore error:', err.message);
+      // Fallback: try without ordering (index might not exist yet)
+      db.collection('offers').where('active', '==', true).onSnapshot(snap => {
+        cachedOffers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderOffers();
+      });
+    });
+}
+
+function renderOffers() {
+  const grid = document.getElementById('offers-grid');
+  const empty = document.getElementById('no-offers');
+
+  // Remove skeletons
+  ['sk1','sk2','sk3'].forEach(id => { const el = document.getElementById(id); if (el) el.remove(); });
+  // Remove previous real cards
+  grid.querySelectorAll('.real-card').forEach(el => el.remove());
+
+  const now = new Date();
+  const active = cachedOffers.filter(o => {
+    if (!o.expiryDate) return true;
+    const exp = o.expiryDate.toDate ? o.expiryDate.toDate() : new Date(o.expiryDate);
+    return exp > now;
+  });
+
+  if (active.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  active.forEach((offer, i) => {
+    const card = buildCard(offer, i);
+    grid.appendChild(card);
+  });
+}
+
+function buildCard(o, i) {
+  const card = document.createElement('div');
+  card.className = 'offer-card real-card fade-up';
+  card.style.animationDelay = `${i * 0.08}s`;
+
+  const name  = (lang === 'ar' && o.companyNameAr) ? o.companyNameAr : o.companyName;
+  const offer = (lang === 'ar' && o.offerTextAr)   ? o.offerTextAr  : o.offerText;
+
+  let expiryBadge = '';
+  if (o.expiryDate) {
+    const exp = o.expiryDate.toDate ? o.expiryDate.toDate() : new Date(o.expiryDate);
+    const days = Math.ceil((exp - Date.now()) / 864e5);
+    const cls  = days <= 7 ? 'soon' : 'live';
+    const lbl  = lang === 'en'
+      ? (days <= 7 ? `${days}d left` : `Until ${exp.toLocaleDateString('en-SA', {month:'short',day:'numeric'})}`)
+      : (days <= 7 ? `${days} أيام`  : `حتى ${exp.toLocaleDateString('ar-SA',{month:'short',day:'numeric'})}`);
+    expiryBadge = `<span class="expiry-label ${cls}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;"></span>${lbl}</span>`;
+  }
+
+  const promoSection = o.promoCode ? `
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:7px;" class="translatable"
+           data-en="Promo Code" data-ar="كود الخصم">${lang==='ar'?'كود الخصم':'Promo Code'}</div>
+      <span class="promo-chip" onclick="copyCode('${o.promoCode}')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        ${o.promoCode}
+      </span>
+    </div>` : '';
+
+  const phoneSection = o.phone ? `
+    <a href="tel:${o.phone}" class="phone-strip" style="text-decoration:none;">
+      <div style="width:38px;height:38px;background:linear-gradient(135deg,#C8A951,#9A7E35);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="17" height="17" fill="none" stroke="#07091A" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.55 13 19.79 19.79 0 01.48 4.22 2 2 0 012.46 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 9.91a16 16 0 006.18 6.18l1.78-1.78a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-muted);">${lang==='ar'?'اتصل الآن':'Call Now'}</div>
+        <div style="font-size:14px;font-weight:600;color:var(--gold);">${o.phone}</div>
+      </div>
+    </a>` : '';
+
+  card.innerHTML = `
+    <div class="row-between" style="align-items:flex-start;margin-bottom:14px;">
+      <div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(200,169,81,0.55);margin-bottom:6px;">
+          ${lang==='ar'?'عرض الشريك':'Partner Offer'}
+        </div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;">${name}</h3>
+      </div>
+      ${expiryBadge}
+    </div>
+    <div style="background:rgba(200,169,81,0.06);border:1px solid rgba(200,169,81,0.14);border-radius:12px;padding:16px 18px;margin-bottom:18px;">
+      <p style="font-size:16px;font-weight:600;line-height:1.55;">${offer}</p>
+    </div>
+    ${promoSection}
+    ${phoneSection}
+  `;
+  return card;
+}
+
+function copyCode(code) {
+  navigator.clipboard.writeText(code).then(() => {
+    toast(lang === 'en' ? `"${code}" copied to clipboard!` : `تم نسخ "${code}"!`);
+  });
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+loadOffers();
+
+
+// ─────────────────────── THREE.JS TOWER ───────────────────────
+(function buildTower() {
+  const canvas   = document.getElementById('tower-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.9;
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x07091A, 0.012);
+  scene.background = new THREE.Color(0x07091A);
+
+  const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 300);
+  camera.position.set(10, 14, 28);
+  camera.lookAt(0, 14, 0);
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0x1a2040, 3));
+
+  const goldLight = new THREE.PointLight(0xC8A951, 4, 70);
+  goldLight.position.set(6, 28, 12);
+  scene.add(goldLight);
+
+  const blueLight = new THREE.PointLight(0x2255cc, 2.5, 80);
+  blueLight.position.set(-12, 18, 8);
+  scene.add(blueLight);
+
+  const bottomGlow = new THREE.PointLight(0xC8A951, 2, 25);
+  bottomGlow.position.set(0, 1, 4);
+  scene.add(bottomGlow);
+
+  // ── Main tower group ──
+  const tower = new THREE.Group();
+
+  const towerMat = new THREE.MeshPhongMaterial({
+    color: 0x0d1630,
+    specular: 0x4466cc,
+    shininess: 140,
+  });
+
+  // Base podium
+  const podium = new THREE.Mesh(new THREE.BoxGeometry(5.5, 2, 5.5), towerMat);
+  podium.position.y = 1;
+  tower.add(podium);
+
+  // Main shaft
+  const shaft = new THREE.Mesh(new THREE.BoxGeometry(4, 32, 4), towerMat);
+  shaft.position.y = 18;
+  shaft.castShadow = true;
+  tower.add(shaft);
+
+  // Glass skin overlay
+  const glassMat = new THREE.MeshPhongMaterial({
+    color: 0x2244aa, specular: 0xC8A951, shininess: 200,
+    transparent: true, opacity: 0.12,
+  });
+  tower.add(new THREE.Mesh(new THREE.BoxGeometry(4.05, 32.1, 4.05), glassMat).translateY(18));
+
+  // Mid setback (floor 22+)
+  const mid = new THREE.Mesh(new THREE.BoxGeometry(3.2, 10, 3.2), towerMat);
+  mid.position.y = 39;
+  tower.add(mid);
+
+  // Crown
+  const crown = new THREE.Mesh(new THREE.BoxGeometry(2.5, 7, 2.5), towerMat);
+  crown.position.y = 47.5;
+  tower.add(crown);
+
+  // Spire
+  const spireMat = new THREE.MeshPhongMaterial({
+    color: 0xC8A951, emissive: 0xC8A951, emissiveIntensity: 0.6,
+  });
+  const spire = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.28, 7, 8), spireMat);
+  spire.position.y = 55.5;
+  tower.add(spire);
+
+  // Spire top light
+  const spireLight = new THREE.PointLight(0xC8A951, 2.5, 14);
+  spireLight.position.set(0, 59, 0);
+  tower.add(spireLight);
+
+  // ── Windows helper ──
+  function addWin(x, y, z, rotY) {
+    const lit = Math.random() > 0.22;
+    const col = lit
+      ? (Math.random() > 0.5 ? 0xF0D98A : (Math.random() > 0.5 ? 0xaaddff : 0xffffff))
+      : 0x0d1630;
+    const w = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.28, 0.34),
+      new THREE.MeshBasicMaterial({ color: col })
+    );
+    w.position.set(x, y, z);
+    w.rotation.y = rotY;
+    tower.add(w);
+  }
+
+  // Place windows on 4 faces
+  for (let f = 0; f < 30; f++) {
+    const y = f * 1.05 + 2.2;
+    for (let c = -3; c <= 3; c++) {
+      const s = c * 0.52;
+      addWin(s,     y,  2.02,  0);           // front
+      addWin(s,     y, -2.02,  Math.PI);     // back
+      addWin( 2.02, y, s,      Math.PI/2);   // right
+      addWin(-2.02, y, s,     -Math.PI/2);   // left
+    }
+  }
+
+  tower.position.set(-1.5, -2, 0);
+  scene.add(tower);
+
+  // ── Ground plane ──
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(150, 150),
+    new THREE.MeshPhongMaterial({ color: 0x090d1f, specular: 0x1a2244, shininess: 30 })
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // Ground reflection strip
+  const refl = new THREE.Mesh(
+    new THREE.PlaneGeometry(6, 0.4),
+    new THREE.MeshBasicMaterial({ color: 0xC8A951, transparent: true, opacity: 0.18 })
+  );
+  refl.rotation.x = -Math.PI / 2;
+  refl.position.set(-1.5, -1.99, 1.5);
+  scene.add(refl);
+
+  // ── Background city silhouette ──
+  const cityMat = new THREE.MeshPhongMaterial({ color: 0x0c1228 });
+  [
+    [-14, 10, 2.8, 2.2], [-9,  7, 2, 2],   [-18, 13, 3, 2.5],
+    [10,  9, 2.5, 2.5],  [14,  6, 2, 2],   [18, 15, 2.2, 2.2],
+    [-22, 8, 3.5, 2.8],  [22, 11, 2.8, 2],
+  ].forEach(([x, h, w, d]) => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), cityMat);
+    mesh.position.set(x, h/2 - 2, -12);
+    scene.add(mesh);
+  });
+
+  // ── Stars ──
+  const pos = new Float32Array(700 * 3);
+  for (let i = 0; i < 700; i++) {
+    pos[i*3]   = (Math.random() - 0.5) * 220;
+    pos[i*3+1] = Math.random() * 90 + 25;
+    pos[i*3+2] = (Math.random() - 0.5) * 120 - 15;
+  }
+  const sg = new THREE.BufferGeometry();
+  sg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const stars = new THREE.Points(sg, new THREE.PointsMaterial({
+    color: 0xffffff, size: 0.14, transparent: true, opacity: 0.75
+  }));
+  scene.add(stars);
+
+  // ── Animation ──
+  let t = 0;
+  (function tick() {
+    requestAnimationFrame(tick);
+    t += 0.006;
+
+    camera.position.x =  8 * Math.cos(t * 0.12);
+    camera.position.z = 28 * Math.cos(t * 0.08) + 4;
+    camera.position.y = 14 + Math.sin(t * 0.18) * 1.8;
+    camera.lookAt(-1.5, 16, 0);
+
+    spireLight.intensity = 2 + Math.sin(t * 2.8) * 0.9;
+    goldLight.position.x = 6 + Math.sin(t * 0.45) * 4;
+    goldLight.position.z = 12 + Math.cos(t * 0.45) * 3;
+    stars.rotation.y    += 0.00008;
+
+    renderer.render(scene, camera);
+  })();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+
+</script>
+</body>
+</html>
