@@ -438,14 +438,34 @@ async function processLead(product, visitor) {
   const title = p ? (lang==='ar' && p.title ? p.title : (p.titleEn || p.title || '')) : '';
 
   try {
-    await db.collection('leads').add({
-      name: visitor.name, phone: visitor.phone, lang,
-      source: 'abaad_product',
-      productId: product.id,
-      productTitle: title,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    });
-  } catch(err) { console.warn('Lead save failed:', err); }
+    // Check for duplicate: same name AND same phone → skip saving
+    const existing = await db.collection('leads')
+      .where('name',  '==', visitor.name)
+      .where('phone', '==', visitor.phone)
+      .limit(1).get();
+
+    if (existing.empty) {
+      // New visitor (or same name but different phone) → save
+      await db.collection('leads').add({
+        name: visitor.name, phone: visitor.phone, lang,
+        source: 'abaad_product',
+        productId: product.id,
+        productTitle: title,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    // If duplicate found → silently skip, still show success & open link
+  } catch(err) {
+    // If query fails, try saving anyway (fail-safe)
+    try {
+      await db.collection('leads').add({
+        name: visitor.name, phone: visitor.phone, lang,
+        source: 'abaad_product',
+        productId: product.id, productTitle: title,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch(e) { console.warn('Lead save failed:', e); }
+  }
 
   pendingProduct = null;
   showSuccessModal(product.signupLink || '');
