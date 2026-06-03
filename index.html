@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="html-root">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أبعاد | عروض حصرية لزوارنا</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #C8A951; --gold-light: #F0D98A; --gold-dark: #9A7E35;
+      --navy: #07091A; --navy-mid: #0E1427;
+      --text-muted: #8A94B0;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--navy); color: #fff; font-family: 'Noto Sans Arabic', 'Inter', sans-serif; overflow-x: hidden; }
+    [lang="en"] body, [lang="en"] .t { font-family: 'Inter', sans-serif; }
+    [lang="ar"] body, [lang="ar"] .t { font-family: 'Noto Sans Arabic', sans-serif; }
+
+    /* Canvas & overlay */
+    #tower-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    #overlay { position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: linear-gradient(to bottom, rgba(7,9,26,0.15) 0%, rgba(7,9,26,0.50) 35%, rgba(7,9,26,0.88) 65%, rgba(7,9,26,0.98) 100%); }
+    .above { position: relative; z-index: 2; }
+
+    /* Gold gradient text */
+    .gold { background: linear-gradient(135deg,#C8A951,#F0D98A,#C8A951); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+    /* Navbar */
+    #nav { position:fixed; top:0; inset-inline:0; z-index:100; backdrop-filter:blur(20px); background:rgba(7,9,26,0.80); border-bottom:1px solid rgba(200,169,81,0.12); }
+
+    /* Offer card */
+    .offer-card { background:linear-gradient(145deg,rgba(255,255,255,0.055),rgba(255,255,255,0.015)); border:1px solid rgba(200,169,81,0.20); border-radius:18px; padding:24px; transition:all .35s; }
+    .offer-card:hover { transform:translateY(-5px); border-color:rgba(200,169,81,0.48); box-shadow:0 24px 60px rgba(200,169,81,0.10); }
+    .offer-card.claimed { border-color:rgba(74,222,128,0.30); }
+
+    /* Buttons */
+    .btn-gold { background:linear-gradient(135deg,#C8A951,#9A7E35); color:#07091A; font-weight:700; border:none; border-radius:12px; padding:13px 28px; cursor:pointer; font-family:inherit; font-size:14px; width:100%; transition:all .25s; }
+    .btn-gold:hover { background:linear-gradient(135deg,#F0D98A,#C8A951); transform:translateY(-2px); box-shadow:0 8px 28px rgba(200,169,81,0.35); }
+    .btn-gold:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .btn-claimed { background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.30); color:#4ade80; font-weight:700; border-radius:12px; padding:13px 28px; cursor:pointer; font-family:inherit; font-size:14px; width:100%; transition:all .25s; }
+    .btn-claimed:hover { background:rgba(74,222,128,0.20); }
+    .btn-full-offer { background:rgba(255,255,255,0.06); color:var(--text-muted); font-weight:600; border:1px solid rgba(255,255,255,0.10); border-radius:12px; padding:13px 28px; width:100%; font-size:14px; cursor:not-allowed; font-family:inherit; }
+
+    .btn-outline { background:transparent; border:1.5px solid rgba(200,169,81,0.40); color:var(--gold); border-radius:10px; padding:10px 22px; cursor:pointer; font-family:inherit; font-size:14px; transition:all .2s; }
+    .btn-outline:hover { background:rgba(200,169,81,0.10); border-color:var(--gold); }
+    .btn-cancel { background:rgba(248,113,113,0.10); border:1px solid rgba(248,113,113,0.25); color:#f87171; border-radius:10px; padding:10px 22px; cursor:pointer; font-family:inherit; font-size:14px; transition:all .2s; }
+    .btn-cancel:hover { background:rgba(248,113,113,0.20); }
+
+    /* Form inputs */
+    .inp { background:rgba(255,255,255,0.06); border:1.5px solid rgba(255,255,255,0.12); color:#fff; border-radius:12px; padding:14px 18px; width:100%; font-size:15px; font-family:inherit; transition:all .2s; }
+    .inp:focus { outline:none; border-color:var(--gold); background:rgba(200,169,81,0.07); box-shadow:0 0 0 3px rgba(200,169,81,0.14); }
+    .inp::placeholder { color:rgba(255,255,255,0.28); }
+
+    /* Modal overlay */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:300; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .3s; }
+    .modal-overlay.open { opacity:1; pointer-events:all; }
+    .modal-box { background:#0E1427; border:1px solid rgba(200,169,81,0.22); border-radius:22px; padding:32px; width:100%; max-width:480px; transform:translateY(20px); transition:transform .35s cubic-bezier(.34,1.56,.64,1); max-height:90vh; overflow-y:auto; }
+    .modal-overlay.open .modal-box { transform:translateY(0); }
+
+    /* Code display */
+    .code-box { background:rgba(200,169,81,0.08); border:2px dashed rgba(200,169,81,0.40); border-radius:14px; padding:20px; text-align:center; margin:20px 0; }
+    .code-text { font-family:'Courier New',monospace; font-size:26px; font-weight:900; letter-spacing:.14em; color:var(--gold-light); }
+
+    /* Skeleton */
+    .skel { background:linear-gradient(90deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.04) 100%); background-size:200% 100%; animation:shimmer 1.6s infinite; border-radius:8px; }
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+
+    /* Animations */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+    .fade-up { animation:fadeUp .7s ease both; }
+    .d1{animation-delay:.1s} .d2{animation-delay:.2s} .d3{animation-delay:.3s}
+
+    /* Toast */
+    #toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px); background:rgba(14,20,39,.95); backdrop-filter:blur(16px); border:1px solid rgba(200,169,81,.35); color:var(--gold-light); padding:12px 22px; border-radius:14px; font-size:14px; font-weight:500; z-index:999; transition:transform .45s cubic-bezier(.34,1.56,.64,1); white-space:nowrap; }
+    #toast.show { transform:translateX(-50%) translateY(0); }
+
+    /* Slots remaining */
+    .slots-badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; background:rgba(255,170,0,.12); border:1px solid rgba(255,170,0,.25); color:#ffaa00; }
+
+    /* Expiry badge */
+    .exp-badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; }
+    .exp-live { background:rgba(80,220,120,.12); border:1px solid rgba(80,220,120,.28); color:#60ea88; }
+    .exp-soon { background:rgba(255,170,0,.12); border:1px solid rgba(255,170,0,.28); color:#ffb020; }
+
+    /* Info row */
+    .info-row { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:rgba(255,255,255,.035); border-radius:10px; font-size:14px; }
+    .info-row + .info-row { margin-top:8px; }
+
+    /* Divider */
+    .gold-line { height:1px; background:linear-gradient(90deg,transparent,rgba(200,169,81,.35),transparent); margin:22px 0; }
+
+    /* Pulse dot */
+    @keyframes pulse-ring { 0%{transform:scale(1);opacity:.9} 100%{transform:scale(2.4);opacity:0} }
+    .pulse { position:relative; display:inline-block; width:8px; height:8px; background:var(--gold); border-radius:50%; }
+    .pulse::after { content:''; position:absolute; inset:0; border-radius:50%; background:var(--gold); animation:pulse-ring 1.8s ease infinite; }
+
+    /* Lang btn */
+    .lang-btn { background:rgba(200,169,81,.09); border:1px solid rgba(200,169,81,.28); color:var(--gold); border-radius:9px; padding:6px 16px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .2s; }
+    .lang-btn:hover { background:rgba(200,169,81,.18); border-color:var(--gold); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:var(--navy)} ::-webkit-scrollbar-thumb{background:rgba(200,169,81,.25);border-radius:3px}
+    .modal-box::-webkit-scrollbar{width:4px}
+
+    /* Company initial avatar */
+    .company-avatar { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; color:#fff; flex-shrink:0; }
+  </style>
+</head>
+<body>
+
+<canvas id="tower-canvas"></canvas>
+<div id="overlay"></div>
+<div id="toast"></div>
+
+<!-- ══════ NAVBAR ══════ -->
+<nav id="nav" class="above">
+  <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="34" height="38" viewBox="0 0 60 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+        <polygon points="30,2 58,28 30,58 2,28" fill="#F7BC00"/>
+        <polygon points="2,28 30,2 30,58" fill="#C8900A" opacity="0.28"/>
+        <line x1="30" y1="2" x2="30" y2="58" stroke="rgba(255,255,255,0.55)" stroke-width="1.8"/>
+        <line x1="10" y1="10" x2="50" y2="46" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+        <line x1="50" y1="10" x2="10" y2="46" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <path d="M22,22 Q28,16 30,22 Q32,28 38,24 Q34,32 30,30 Q26,34 24,28 Z" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.2"/>
+        <text x="8" y="68" font-family="serif" font-size="9" fill="#3D2B1F" font-weight="700" letter-spacing="2">ABAAD</text>
+      </svg>
+      <span class="t" style="font-size:18px;font-weight:700;color:#F0D98A;" data-ar="أبعاد" data-en="ABAAD">أبعاد</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <a href="#offers" class="t" style="font-size:13px;color:var(--text-muted);text-decoration:none;transition:color .2s;" data-ar="العروض" data-en="Offers" onmouseover="this.style.color='#C8A951'" onmouseout="this.style.color='var(--text-muted)'">العروض</a>
+      <button class="lang-btn" id="lang-btn" onclick="toggleLang()">EN</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════ HERO (compact) ══════ -->
+<section class="above" style="min-height:65vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 24px 60px;">
+  <div class="fade-up" style="max-width:680px;">
+    <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:22px;padding:8px 18px;border-radius:50px;background:rgba(200,169,81,0.09);border:1px solid rgba(200,169,81,0.25);">
+      <span class="pulse"></span>
+      <span class="t" style="font-size:13px;color:var(--gold);" data-ar="برج الملحم · الأحساء" data-en="Al Malhum Tower · Al Ahsa">برج الملحم · الأحساء</span>
+    </div>
+    <h1 style="font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,64px);font-weight:700;line-height:1.15;margin-bottom:18px;">
+      <span class="gold t" data-ar="عروض حصرية" data-en="Exclusive Offers">عروض حصرية</span><br>
+      <span class="t" style="font-size:clamp(20px,3.5vw,36px);color:rgba(255,255,255,.75);" data-ar="لزوار أبعاد في برج الملحم" data-en="For Abaad Visitors at Al Malhum Tower">لزوار أبعاد في برج الملحم</span>
+    </h1>
+    <p class="t" style="font-size:15px;color:var(--text-muted);line-height:1.75;max-width:500px;margin:0 auto 32px;"
+       data-ar="اكتشف العروض الخاصة من شركاء أبعاد واحصل على كودك الشخصي فوراً"
+       data-en="Discover special deals from Abaad's partners and get your personal code instantly">
+       اكتشف العروض الخاصة من شركاء أبعاد واحصل على كودك الشخصي فوراً
+    </p>
+    <a href="#offers" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:14px;background:linear-gradient(135deg,#C8A951,#9A7E35);color:#07091A;font-weight:700;font-size:15px;text-decoration:none;transition:all .3s;"
+       onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 32px rgba(200,169,81,0.35)'"
+       onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <span class="t" data-ar="تصفّح العروض" data-en="Browse Offers">تصفّح العروض</span>
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ══════ OFFERS SECTION ══════ -->
+<section class="above" id="offers" style="padding:20px 24px 80px;">
+  <div style="max-width:1100px;margin:0 auto;">
+
+    <div style="text-align:center;margin-bottom:48px;" class="fade-up">
+      <div style="width:56px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto 18px;"></div>
+      <h2 class="t" style="font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,40px);font-weight:700;margin-bottom:12px;" data-ar="عروض شركاء أبعاد" data-en="Abaad Partner Offers">عروض شركاء أبعاد</h2>
+      <p class="t" style="font-size:14px;color:var(--text-muted);max-width:460px;margin:0 auto;" data-ar="اضغط على أي عرض للحصول على كودك الشخصي الحصري" data-en="Tap any offer to get your personal exclusive code">اضغط على أي عرض للحصول على كودك الشخصي الحصري</p>
+    </div>
+
+    <div id="offers-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;">
+      <div class="offer-card" id="sk1"><div class="skel" style="height:14px;width:80px;margin-bottom:16px;"></div><div class="skel" style="height:24px;width:150px;margin-bottom:18px;"></div><div class="skel" style="height:52px;margin-bottom:16px;"></div><div class="skel" style="height:44px;"></div></div>
+      <div class="offer-card" id="sk2"><div class="skel" style="height:14px;width:80px;margin-bottom:16px;"></div><div class="skel" style="height:24px;width:150px;margin-bottom:18px;"></div><div class="skel" style="height:52px;margin-bottom:16px;"></div><div class="skel" style="height:44px;"></div></div>
+      <div class="offer-card" id="sk3"><div class="skel" style="height:14px;width:80px;margin-bottom:16px;"></div><div class="skel" style="height:24px;width:150px;margin-bottom:18px;"></div><div class="skel" style="height:52px;margin-bottom:16px;"></div><div class="skel" style="height:44px;"></div></div>
+    </div>
+    <div id="no-offers" style="display:none;text-align:center;padding:80px 20px;">
+      <div style="font-size:56px;opacity:.18;margin-bottom:16px;">🏢</div>
+      <p class="t" style="color:var(--text-muted);" data-ar="لا توجد عروض متاحة حالياً" data-en="No offers available right now">لا توجد عروض متاحة حالياً</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════ FOOTER ══════ -->
+<footer class="above" style="padding:36px 24px;text-align:center;border-top:1px solid rgba(200,169,81,.10);">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;">
+    <svg width="26" height="30" viewBox="0 0 60 68" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="30,2 58,28 30,58 2,28" fill="#F7BC00"/><polygon points="2,28 30,2 30,58" fill="#C8900A" opacity="0.28"/><line x1="30" y1="2" x2="30" y2="58" stroke="rgba(255,255,255,0.55)" stroke-width="1.8"/><path d="M22,22 Q28,16 30,22 Q32,28 38,24 Q34,32 30,30 Q26,34 24,28 Z" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.2"/></svg>
+    <span class="t" style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#F0D98A;" data-ar="أبعاد" data-en="ABAAD">أباد</span>
+  </div>
+  <p class="t" style="font-size:12px;color:#3A4460;" data-ar="مساحة عمل متميزة · برج الملحم، الأحساء" data-en="Premium Workspace · Al Malhum Tower, Al Ahsa">مساحة عمل متميزة · برج الملحم، الأحساء</p>
+  <p style="font-size:11px;color:#2A3050;margin-top:6px;">© 2024 أبعاد Inc.</p>
+</footer>
+
+<!-- ══════ INFO MODAL (collect name + phone) ══════ -->
+<div class="modal-overlay" id="info-modal" onclick="if(event.target===this)closeInfoModal()">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 class="t" style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;" data-ar="أدخل بياناتك للحصول على الكود" data-en="Enter your details to get the code">أدخل بياناتك للحصول على الكود</h3>
+      <button onclick="closeInfoModal()" style="background:rgba(255,255,255,.07);border:none;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <p class="t" style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.65;" data-ar="بياناتك تُستخدم فقط لإرسال أبعاد عروضاً خاصة لك — لن تُشارك مع أي طرف" data-en="Your details are only used to send you special Abaad offers — never shared">بياناتك تُستخدم فقط لإرسال أبعاد عروضاً خاصة لك — لن تُشارك مع أي طرف</p>
+    <form id="info-form" onsubmit="submitInfo(event)">
+      <div style="margin-bottom:16px;">
+        <label class="t" style="display:block;font-size:12px;font-weight:500;color:var(--text-muted);margin-bottom:8px;" data-ar="الاسم الكامل" data-en="Full Name">الاسم الكامل</label>
+        <input id="v-name" type="text" class="inp t" required data-placeholder-ar="اسمك" data-placeholder-en="Your name" placeholder="اسمك">
+      </div>
+      <div style="margin-bottom:24px;">
+        <label class="t" style="display:block;font-size:12px;font-weight:500;color:var(--text-muted);margin-bottom:8px;" data-ar="رقم الهاتف" data-en="Phone Number">رقم الهاتف</label>
+        <input id="v-phone" type="tel" class="inp" required placeholder="+966 5X XXX XXXX">
+      </div>
+      <button type="submit" class="btn-gold t" id="info-submit-btn" data-ar="احصل على الكود ←" data-en="Get My Code →">احصل على الكود ←</button>
+    </form>
+    <p class="t" style="font-size:11px;color:rgba(255,255,255,.2);text-align:center;margin-top:14px;" data-ar="ستُملأ بياناتك تلقائياً للعروض التالية" data-en="Your details will be pre-filled for future offers">ستُملأ بياناتك تلقائياً للعروض التالية</p>
+  </div>
+</div>
+
+<!-- ══════ CONFIRM MODAL (code display) ══════ -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box" style="max-width:440px;">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="width:56px;height:56px;background:linear-gradient(135deg,rgba(74,222,128,.2),rgba(74,222,128,.08));border:2px solid rgba(74,222,128,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+        <svg width="24" height="24" fill="none" stroke="#4ade80" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h3 id="conf-company" style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:6px;"></h3>
+      <p id="conf-offer" style="font-size:14px;color:var(--text-muted);"></p>
+    </div>
+
+    <!-- Code -->
+    <div class="code-box">
+      <div class="t" style="font-size:11px;color:var(--text-muted);margin-bottom:10px;" data-ar="كود الاسترداد الخاص بك" data-en="Your Personal Redemption Code">كود الاسترداد الخاص بك</div>
+      <div class="code-text" id="conf-code"></div>
+      <button onclick="copyCode()" style="margin-top:10px;background:rgba(200,169,81,.12);border:1px solid rgba(200,169,81,.3);color:var(--gold);border-radius:8px;padding:6px 16px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .2s;"
+              onmouseover="this.style.background='rgba(200,169,81,.22)'" onmouseout="this.style.background='rgba(200,169,81,.12)'" class="t" data-ar="نسخ الكود" data-en="Copy Code">نسخ الكود</button>
+    </div>
+
+    <!-- Details -->
+    <div>
+      <div class="info-row"><span class="t" style="color:var(--text-muted);" data-ar="الزائر" data-en="Visitor">الزائر</span><span id="conf-name" style="font-weight:600;"></span></div>
+      <div class="info-row" style="margin-top:8px;"><span class="t" style="color:var(--text-muted);" data-ar="وقت الحصول على الكود" data-en="Code Obtained">وقت الحصول على الكود</span><span id="conf-time" style="font-size:13px;"></span></div>
+      <div class="info-row" style="margin-top:8px;"><span class="t" style="color:var(--text-muted);" data-ar="صالح لمدة" data-en="Valid For">صالح لمدة</span><span id="conf-validity" style="font-weight:600;color:var(--gold);"></span></div>
+    </div>
+
+    <div class="gold-line"></div>
+
+    <!-- Cancel note -->
+    <div style="background:rgba(255,170,0,.07);border:1px solid rgba(255,170,0,.18);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;line-height:1.6;">
+      <span style="color:#ffaa00;">⚠️</span>
+      <span class="t" style="color:rgba(255,255,255,.65);" data-ar=" يرجى إلغاء الكود إذا لن تستخدمه حتى يتمكن شخص آخر من الاستفادة" data-en=" Please cancel the code if you won't use it so someone else can benefit"> يرجى إلغاء الكود إذا لن تستخدمه حتى يتمكن شخص آخر من الاستفادة</span>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button class="btn-cancel t" id="cancel-code-btn" data-ar="إلغاء الكود" data-en="Cancel Code" onclick="cancelClaim()">إلغاء الكود</button>
+      <button class="btn-gold t" style="flex:1;" data-ar="حجز عرض آخر ←" data-en="Get Another Offer →" onclick="closeConfirmModal()">حجز عرض آخر ←</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════ JAVASCRIPT ════════════════ -->
+<script>
+
+// ── FIREBASE CONFIG ──
+// 🔥 Replace with your Firebase project values
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBMil1i4ba4gIzpV4PGOUDZrPh5vWH3riI",
+  authDomain:        "abaad-39b3c.firebaseapp.com",
+  projectId:         "abaad-39b3c",
+  storageBucket:     "abaad-39b3c.firebasestorage.app",
+  messagingSenderId: "750678331728",
+  appId:             "1:750678331728:web:c3f4c7c5c678d87da51c55"
+};
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+
+// ── LANGUAGE ──
+let lang = 'ar';
+
+function toggleLang() {
+  lang = lang === 'ar' ? 'en' : 'ar';
+  const html = document.getElementById('html-root');
+  const btn  = document.getElementById('lang-btn');
+  html.setAttribute('lang', lang);
+  html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+  btn.textContent = lang === 'ar' ? 'EN' : 'عربي';
+  document.querySelectorAll('.t[data-'+lang+']').forEach(el => { el.textContent = el.dataset[lang]; });
+  document.querySelectorAll('.inp[data-placeholder-'+lang+']').forEach(el => { el.placeholder = el.dataset['placeholder'+lang.charAt(0).toUpperCase()+lang.slice(1)]; });
+  renderOffers();
+}
+
+// ── OFFERS ──
+let cachedOffers = [];
+let pendingOfferId = null;
+let currentClaimId = null;
+let currentClaimOfferId = null;
+
+function loadOffers() {
+  db.collection('offers').where('active','==',true).orderBy('createdAt','desc')
+    .onSnapshot(snap => {
+      cachedOffers = snap.docs.map(d => ({id:d.id,...d.data()}));
+      renderOffers();
+    }, () => {
+      db.collection('offers').where('active','==',true).onSnapshot(snap => {
+        cachedOffers = snap.docs.map(d => ({id:d.id,...d.data()}));
+        renderOffers();
+      });
+    });
+}
+
+function renderOffers() {
+  const grid = document.getElementById('offers-grid');
+  const empty = document.getElementById('no-offers');
+  ['sk1','sk2','sk3'].forEach(id => { const e = document.getElementById(id); if(e) e.remove(); });
+  grid.querySelectorAll('.real-card').forEach(e => e.remove());
+
+  const claimed = JSON.parse(localStorage.getItem('abaad_claims') || '{}');
+  const now = Date.now();
+  const active = cachedOffers.filter(o => !o.expiryDate || (o.expiryDate.toDate ? o.expiryDate.toDate() : new Date(o.expiryDate)) > now);
+
+  if (active.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  active.forEach((o, i) => {
+    const card = buildCard(o, i, claimed);
+    grid.appendChild(card);
+  });
+}
+
+const COLORS = ['#3B6EA5','#7B4EA5','#5BAA6A','#A55B3B','#4A8F8F','#A54A7B','#8F7A3A'];
+
+function buildCard(o, i, claimed) {
+  const card = document.createElement('div');
+  card.className = 'offer-card real-card fade-up';
+  card.style.animationDelay = `${i * 0.08}s`;
+
+  const name   = (lang==='ar' && o.companyNameAr) ? o.companyNameAr : o.companyName;
+  const offer  = (lang==='ar' && o.offerTextAr)   ? o.offerTextAr  : o.offerText;
+  const initials = (o.companyName||'??').split(/\s+/).map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
+  const color  = COLORS[i % COLORS.length];
+
+  // Expiry badge
+  let expBadge = '';
+  if (o.expiryDate) {
+    const exp  = o.expiryDate.toDate ? o.expiryDate.toDate() : new Date(o.expiryDate);
+    const days = Math.ceil((exp - Date.now()) / 864e5);
+    const cls  = days <= 7 ? 'exp-soon' : 'exp-live';
+    const lbl  = lang==='ar' ? (days<=7 ? `${days} أيام متبقية` : `حتى ${exp.toLocaleDateString('ar-SA',{month:'short',day:'numeric'})}`)
+                             : (days<=7 ? `${days}d left` : `Until ${exp.toLocaleDateString('en-SA',{month:'short',day:'numeric'})}`);
+    expBadge = `<span class="exp-badge ${cls}"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;"></span>${lbl}</span>`;
+  }
+
+  // Slots badge
+  let slotsBadge = '';
+  const max = o.maxClaims || 0;
+  const cnt = o.claimCount || 0;
+  if (max > 0) {
+    const left = Math.max(0, max - cnt);
+    const lbl  = lang==='ar' ? `${left} من ${max} متبقٍ` : `${left} of ${max} left`;
+    slotsBadge = `<span class="slots-badge"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>${lbl}</span>`;
+  }
+
+  // Button state
+  const isFull    = max > 0 && cnt >= max;
+  const wasClaimed = !!claimed[o.id];
+  let btnHtml;
+  if (wasClaimed) {
+    const lbl = lang==='ar' ? '✓ تم الحصول على الكود' : '✓ Code Obtained';
+    btnHtml = `<button class="btn-claimed" onclick="showExistingClaim('${o.id}')">${lbl}</button>`;
+    card.classList.add('claimed');
+  } else if (isFull) {
+    const lbl = lang==='ar' ? 'انتهت العروض المتاحة' : 'Offer Full';
+    btnHtml = `<button class="btn-full-offer">${lbl}</button>`;
+  } else {
+    const lbl = lang==='ar' ? 'احصل على الكود ←' : 'Get Code →';
+    btnHtml = `<button class="btn-gold" onclick="startClaim('${o.id}')">${lbl}</button>`;
+  }
+
+  card.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="company-avatar" style="background:${color};">${initials}</div>
+        <div>
+          <div class="t" style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(200,169,81,.55);margin-bottom:3px;" data-ar="شريك أبعاد" data-en="Abaad Partner">${lang==='ar'?'شريك أبعاد':'Abaad Partner'}</div>
+          <h3 style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700;">${name}</h3>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">${expBadge}${slotsBadge}</div>
+    </div>
+    <div style="background:rgba(200,169,81,.06);border:1px solid rgba(200,169,81,.13);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+      <p style="font-size:15px;font-weight:600;line-height:1.5;">${offer}</p>
+    </div>
+    ${o.phone ? `<a href="tel:${o.phone}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:11px;text-decoration:none;margin-bottom:14px;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.background='rgba(255,255,255,.04)'">
+      <svg width="14" height="14" fill="none" stroke="#C8A951" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.55 13 19.79 19.79 0 01.48 4.22 2 2 0 012.46 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 9.91a16 16 0 006.18 6.18l1.78-1.78a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      <span style="font-size:13px;color:var(--gold);">${o.phone}</span>
+    </a>` : ''}
+    ${btnHtml}
+  `;
+  return card;
+}
+
+// ── CLAIM FLOW ──
+function startClaim(offerId) {
+  pendingOfferId = offerId;
+  const visitor = sessionStorage.getItem('abaad_visitor');
+  if (visitor) {
+    processClaim(offerId, JSON.parse(visitor));
+  } else {
+    document.getElementById('info-modal').classList.add('open');
+    setTimeout(() => document.getElementById('v-name').focus(), 60);
+  }
+}
+
+function closeInfoModal() {
+  document.getElementById('info-modal').classList.remove('open');
+  pendingOfferId = null;
+}
+
+async function submitInfo(e) {
+  e.preventDefault();
+  const name  = document.getElementById('v-name').value.trim();
+  const phone = document.getElementById('v-phone').value.trim();
+  if (!name || !phone) return;
+
+  const btn = document.getElementById('info-submit-btn');
+  btn.disabled = true;
+  btn.textContent = lang === 'ar' ? 'جاري المعالجة…' : 'Processing…';
+
+  const visitor = { name, phone };
+  sessionStorage.setItem('abaad_visitor', JSON.stringify(visitor));
+  document.getElementById('info-modal').classList.remove('open');
+
+  if (pendingOfferId) await processClaim(pendingOfferId, visitor);
+  btn.disabled = false;
+  btn.textContent = btn.dataset[lang];
+}
+
+async function processClaim(offerId, visitor) {
+  const offer = cachedOffers.find(o => o.id === offerId);
+  if (!offer) {
+    toast(lang === 'ar' ? 'لم يتم العثور على العرض' : 'Offer not found');
+    return;
+  }
+
+  // Double-check slots
+  const max = offer.maxClaims || 0;
+  const cnt = offer.claimCount || 0;
+  if (max > 0 && cnt >= max) {
+    toast(lang === 'ar' ? 'عذراً، انتهت العروض المتاحة' : 'Sorry, this offer is full');
+    return;
+  }
+
+  const code = genCode(offer.companyName);
+  const validDays = offer.validityDays || 30;
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + validDays);
+
+  // Build claim — keep expiresAt as ISO string to avoid Timestamp issues
+  const claimData = {
+    offerId,
+    companyName:   offer.companyName   || '',
+    companyNameAr: offer.companyNameAr || offer.companyName || '',
+    offerText:     offer.offerText     || '',
+    offerTextAr:   offer.offerTextAr   || offer.offerText   || '',
+    visitorName:   visitor.name,
+    visitorPhone:  visitor.phone,
+    code,
+    status:        'active',
+    claimedAt:     firebase.firestore.FieldValue.serverTimestamp(),
+    expiresAtISO:  expiresAt.toISOString(),
+    validityDays:  validDays,
+  };
+
+  try {
+    // Step 1: write the claim
+    const ref = await db.collection('claims').add(claimData);
+
+    // Step 2: increment claimCount (non-blocking — don't let this stop the flow)
+    db.collection('offers').doc(offerId).update({
+      claimCount: firebase.firestore.FieldValue.increment(1)
+    }).catch(e => console.warn('claimCount update failed:', e));
+
+    // Step 3: save locally and show confirmation
+    const saved = JSON.parse(localStorage.getItem('abaad_claims') || '{}');
+    saved[offerId] = {
+      ...claimData,
+      id: ref.id,
+      claimedAt: new Date().toISOString(),
+      expiresAt: expiresAt.toISOString(),
+    };
+    localStorage.setItem('abaad_claims', JSON.stringify(saved));
+    showConfirmation(saved[offerId]);
+    pendingOfferId = null;
+
+  } catch(err) {
+    console.error('Claim error:', err);
+    // Show the real error so we can diagnose it
+    toast('❌ ' + (err.message || err.toString()));
+  }
+}
+
+function showExistingClaim(offerId) {
+  const saved = JSON.parse(localStorage.getItem('abaad_claims') || '{}');
+  if (saved[offerId]) showConfirmation(saved[offerId]);
+}
+
+function showConfirmation(claim) {
+  currentClaimId     = claim.id;
+  currentClaimOfferId = claim.offerId;
+
+  const company = lang==='ar' && claim.companyNameAr ? claim.companyNameAr : claim.companyName;
+  const offer   = lang==='ar' && claim.offerTextAr   ? claim.offerTextAr   : claim.offerText;
+  const days    = claim.validityDays || 30;
+  const now     = new Date();
+
+  document.getElementById('conf-company').textContent  = company;
+  document.getElementById('conf-offer').textContent    = offer;
+  document.getElementById('conf-code').textContent     = claim.code;
+  document.getElementById('conf-name').textContent     = claim.visitorName;
+  document.getElementById('conf-time').textContent     = now.toLocaleTimeString(lang==='ar'?'ar-SA':'en-SA',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('conf-validity').textContent = lang==='ar' ? `${days} يوم` : `${days} days`;
+
+  // Translate confirm modal dynamic elements
+  document.querySelectorAll('#confirm-modal .t[data-'+lang+']').forEach(el => { el.textContent = el.dataset[lang]; });
+
+  document.getElementById('confirm-modal').classList.add('open');
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirm-modal').classList.remove('open');
+  currentClaimId = null;
+  currentClaimOfferId = null;
+  renderOffers(); // refresh button states
+}
+
+async function cancelClaim() {
+  if (!currentClaimId || !currentClaimOfferId) return;
+  const btn = document.getElementById('cancel-code-btn');
+  btn.disabled = true;
+
+  try {
+    await db.collection('claims').doc(currentClaimId).update({ status: 'cancelled' });
+    await db.collection('offers').doc(currentClaimOfferId).update({
+      claimCount: firebase.firestore.FieldValue.increment(-1)
+    });
+    const saved = JSON.parse(localStorage.getItem('abaad_claims') || '{}');
+    delete saved[currentClaimOfferId];
+    localStorage.setItem('abaad_claims', JSON.stringify(saved));
+    closeConfirmModal();
+    toast(lang==='ar' ? 'تم إلغاء الكود بنجاح' : 'Code cancelled successfully');
+  } catch(err) {
+    console.error(err);
+    btn.disabled = false;
+    toast(lang==='ar' ? 'فشل الإلغاء' : 'Cancellation failed');
+  }
+}
+
+function copyCode() {
+  const code = document.getElementById('conf-code').textContent;
+  navigator.clipboard.writeText(code).then(() => toast(lang==='ar' ? `تم نسخ "${code}"` : `"${code}" copied!`));
+}
+
+function genCode(companyName) {
+  const words = (companyName||'XX').split(/\s+/).filter(w=>w);
+  const init  = words.slice(0,3).map(w=>w[0].toUpperCase()).join('').substring(0,3);
+  const num   = Math.floor(1000 + Math.random() * 9000);
+  return `ABAAD-${init}-${num}`;
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+loadOffers();
+
+
+// ── THREE.JS: AL MALHUM TOWER ──
+(function() {
+  const canvas   = document.getElementById('tower-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x060B18);
+  scene.fog = new THREE.FogExp2(0x060B18, 0.010);
+
+  const camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 300);
+  camera.position.set(12, 10, 32);
+  camera.lookAt(0, 12, 0);
+
+  // ── LIGHTS (dusk / golden hour) ──
+  scene.add(new THREE.AmbientLight(0x1A2840, 2.5));
+
+  const sun = new THREE.DirectionalLight(0xFFCC66, 3.5); // warm golden sun
+  sun.position.set(10, 20, 8);
+  sun.castShadow = true;
+  scene.add(sun);
+
+  const fill = new THREE.DirectionalLight(0x6699CC, 1.2); // cool blue sky fill
+  fill.position.set(-12, 10, 6);
+  scene.add(fill);
+
+  const groundBounce = new THREE.PointLight(0xC8A951, 1.5, 30);
+  groundBounce.position.set(0, 0, 5);
+  scene.add(groundBounce);
+
+  // ── AL MALHUM TOWER ──
+  const tower = new THREE.Group();
+
+  const FLOORS  = 15;
+  const TW      = 5.8;   // width
+  const TD      = 3.4;   // depth
+  const CLAD_H  = 0.90;  // white cladding band height
+  const GLASS_H = 0.55;  // blue glass band height
+  const FLOOR_H = CLAD_H + GLASS_H;
+
+  // White/silver cladding material
+  const cladMat = new THREE.MeshPhongMaterial({
+    color: 0xCED8E2, specular: 0xffffff, shininess: 45,
+  });
+  // Slightly darker cladding (alternating)
+  const cladDarkMat = new THREE.MeshPhongMaterial({
+    color: 0xB8C6D2, specular: 0xdddddd, shininess: 30,
+  });
+  // Blue-grey reflective glass
+  const glassMat = new THREE.MeshPhongMaterial({
+    color: 0x5588AA, emissive: 0x112244, emissiveIntensity: 0.22,
+    specular: 0xaaccff, shininess: 200,
+    transparent: true, opacity: 0.92,
+  });
+  // Inner window glow (warm light from inside)
+  const windowGlowMat = new THREE.MeshBasicMaterial({
+    color: 0xFFEEAA, transparent: true, opacity: 0.18,
+  });
+
+  // Build floors as alternating bands
+  for (let i = 0; i < FLOORS; i++) {
+    const y      = i * FLOOR_H;
+    const taper  = 1 - (i / FLOORS) * 0.06; // slight taper upward
+
+    // White cladding band
+    const clad = new THREE.Mesh(
+      new THREE.BoxGeometry(TW * taper, CLAD_H - 0.04, TD),
+      i % 2 === 0 ? cladMat : cladDarkMat
+    );
+    clad.position.y = y + (CLAD_H - 0.04) / 2;
+    clad.castShadow = true;
+    tower.add(clad);
+
+    // Blue glass band (slightly protruding)
+    const glass = new THREE.Mesh(
+      new THREE.BoxGeometry(TW * taper + 0.12, GLASS_H, TD + 0.10),
+      glassMat
+    );
+    glass.position.y = y + CLAD_H + GLASS_H / 2;
+    tower.add(glass);
+
+    // Inner warm glow plane (front face)
+    const glow = new THREE.Mesh(
+      new THREE.PlaneGeometry(TW * taper - 0.3, GLASS_H - 0.08),
+      windowGlowMat
+    );
+    glow.position.set(0, y + CLAD_H + GLASS_H / 2, TD / 2 + 0.12);
+    tower.add(glow);
+  }
+
+  // Crown / parapet (curved top characteristic of Al Malhum)
+  const topY = FLOORS * FLOOR_H;
+  // Main crown slab
+  const crown = new THREE.Mesh(new THREE.BoxGeometry(TW * 0.96, 1.4, TD), cladMat);
+  crown.position.y = topY + 0.7;
+  tower.add(crown);
+  // Overhang lip
+  const lip = new THREE.Mesh(new THREE.BoxGeometry(TW * 1.02, 0.2, TD * 1.04), cladDarkMat);
+  lip.position.y = topY + 1.5;
+  tower.add(lip);
+  // Curved top simulation (stacked thin slabs that taper)
+  for (let k = 0; k < 3; k++) {
+    const s = 1 - k * 0.06;
+    const top = new THREE.Mesh(new THREE.BoxGeometry(TW * s, 0.25, TD * (0.95 - k*0.05)), cladMat);
+    top.position.y = topY + 1.7 + k * 0.26;
+    tower.add(top);
+  }
+
+  // Base podium
+  const podiumMat = new THREE.MeshPhongMaterial({ color: 0x8899A8, specular: 0xaabbcc, shininess: 20 });
+  const podium = new THREE.Mesh(new THREE.BoxGeometry(TW + 1.8, 2.5, TD + 1.4), podiumMat);
+  podium.position.y = 1.25;
+  podium.castShadow = true;
+  tower.add(podium);
+
+  // Ground floor retail/entrance
+  const retail = new THREE.Mesh(new THREE.BoxGeometry(TW + 0.5, 1.8, TD + 0.3),
+    new THREE.MeshPhongMaterial({ color: 0x334455, specular: 0x6688aa, shininess: 80, transparent: true, opacity: 0.9 }));
+  retail.position.y = 2.4;
+  tower.add(retail);
+
+  tower.position.set(-1, -3, 0);
+  scene.add(tower);
+
+  // ── BACKGROUND CITY BUILDINGS ──
+  const bMat = new THREE.MeshPhongMaterial({ color: 0x0A1428 });
+  [
+    [-16, 9,  2.8, 2.0, -10], [-10, 6,  2.0, 2.0, -10], [-20, 12, 3.2, 2.4, -10],
+    [ 11, 8,  2.4, 2.2, -10], [ 16, 5,  1.8, 1.8, -10], [ 20, 14, 2.6, 2.0, -10],
+    [-25, 7,  4.0, 2.5, -14], [ 24, 10, 3.0, 2.2, -14],
+  ].forEach(([x, h, w, d, z]) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), bMat);
+    m.position.set(x, h/2 - 3, z);
+    scene.add(m);
+  });
+
+  // ── GROUND ──
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(200, 200),
+    new THREE.MeshPhongMaterial({ color: 0x08101E, specular: 0x112233, shininess: 15 })
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -3;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // Pavement around base
+  const pavement = new THREE.Mesh(
+    new THREE.PlaneGeometry(12, 8),
+    new THREE.MeshPhongMaterial({ color: 0x151E2E, specular: 0x334455, shininess: 25 })
+  );
+  pavement.rotation.x = -Math.PI / 2;
+  pavement.position.set(-1, -2.99, 1);
+  scene.add(pavement);
+
+  // Gold ground reflection
+  const refl = new THREE.Mesh(
+    new THREE.PlaneGeometry(7, 0.3),
+    new THREE.MeshBasicMaterial({ color: 0xC8A951, transparent: true, opacity: 0.20 })
+  );
+  refl.rotation.x = -Math.PI / 2;
+  refl.position.set(-1, -2.98, 2.5);
+  scene.add(refl);
+
+  // ── STARS ──
+  const sp = new Float32Array(800 * 3);
+  for (let i = 0; i < 800; i++) {
+    sp[i*3]   = (Math.random()-.5)*250;
+    sp[i*3+1] = Math.random()*100+30;
+    sp[i*3+2] = (Math.random()-.5)*130-15;
+  }
+  const sg = new THREE.BufferGeometry();
+  sg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
+  const stars = new THREE.Points(sg, new THREE.PointsMaterial({ color:0xffffff, size:0.13, transparent:true, opacity:0.7 }));
+  scene.add(stars);
+
+  // ── ANIMATION ──
+  let t = 0;
+  (function tick() {
+    requestAnimationFrame(tick);
+    t += 0.004;
+    // Slow majestic orbit — like a slow pan around the tower
+    camera.position.x = 12 * Math.cos(t * 0.10);
+    camera.position.z = 32 * Math.cos(t * 0.07) + 4;
+    camera.position.y = 10 + Math.sin(t * 0.15) * 1.5;
+    camera.lookAt(-1, 12, 0);
+    sun.position.x = 10 + Math.sin(t * 0.08) * 3;
+    stars.rotation.y += 0.00007;
+    renderer.render(scene, camera);
+  })();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+
+</script>
+</body>
+</html>
