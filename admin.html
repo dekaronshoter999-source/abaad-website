@@ -388,12 +388,20 @@
     <div class="card">
       <div class="card-header">
         <span class="card-title">Visitor Leads</span>
-        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">
-          <span style="display:flex;align-items:center;gap:7px;">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export CSV
-          </span>
-        </button>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">
+            <span style="display:flex;align-items:center;gap:7px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export CSV
+            </span>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="clearAllLeads()">
+            <span style="display:flex;align-items:center;gap:7px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Clear All
+            </span>
+          </button>
+        </div>
       </div>
 
       <div style="overflow-x:auto;">
@@ -1075,6 +1083,22 @@ function renderLeadsTable() {
       <td style="font-size:12px;color:var(--text-muted);">${dateStr}</td>
     </tr>`;
   }).join('');
+}
+
+async function clearAllLeads() {
+  if (allLeads.length === 0) { toast('No leads to clear.', 'error'); return; }
+  if (!confirm(`Delete ALL ${allLeads.length} visitor leads? This cannot be undone.`)) return;
+  try {
+    // Firestore batch deletes in chunks of 500
+    for (let i = 0; i < allLeads.length; i += 500) {
+      const batch = db.batch();
+      allLeads.slice(i, i + 500).forEach(l => batch.delete(db.collection('leads').doc(l.id)));
+      await batch.commit();
+    }
+    toast('All leads cleared!', 'success');
+  } catch(err) {
+    toast('Error: ' + err.message, 'error');
+  }
 }
 
 function exportCSV() {
