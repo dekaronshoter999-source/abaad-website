@@ -437,15 +437,13 @@ async function processLead(product, visitor) {
   const p     = cachedProducts.find(x => x.id === product.id);
   const title = p ? (lang==='ar' && p.title ? p.title : (p.titleEn || p.title || '')) : '';
 
-  try {
-    // Check for duplicate: same name AND same phone → skip saving
-    const existing = await db.collection('leads')
-      .where('name',  '==', visitor.name)
-      .where('phone', '==', visitor.phone)
-      .limit(1).get();
+  // Dedup key = phone digits only (same phone = same person, regardless of name)
+  // Different phone with same name = different person → allowed
+  const regKey = 'abaad_reg_' + visitor.phone.replace(/\D/g, '');
+  const alreadySaved = localStorage.getItem(regKey);
 
-    if (existing.empty) {
-      // New visitor (or same name but different phone) → save
+  if (!alreadySaved) {
+    try {
       await db.collection('leads').add({
         name: visitor.name, phone: visitor.phone, lang,
         source: 'abaad_product',
@@ -453,19 +451,11 @@ async function processLead(product, visitor) {
         productTitle: title,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       });
-    }
-    // If duplicate found → silently skip, still show success & open link
-  } catch(err) {
-    // If query fails, try saving anyway (fail-safe)
-    try {
-      await db.collection('leads').add({
-        name: visitor.name, phone: visitor.phone, lang,
-        source: 'abaad_product',
-        productId: product.id, productTitle: title,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-    } catch(e) { console.warn('Lead save failed:', e); }
+      // Mark this phone as registered so future clicks are skipped
+      localStorage.setItem(regKey, new Date().toISOString());
+    } catch(err) { console.warn('Lead save failed:', err); }
   }
+  // Duplicate or not — always show success modal & open the link
 
   pendingProduct = null;
   showSuccessModal(product.signupLink || '');
