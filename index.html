@@ -1406,7 +1406,7 @@ function initParallax(){
 
 // ── FIREBASE: LOAD PARTNER OFFERS ──
 function loadPartnerOffers(){
-  db.collection('offers').where('active','==',true).orderBy('createdAt','desc').limit(3).get()
+  db.collection('partner_offers').where('active','==',true).orderBy('createdAt','desc').limit(3).get()
     .then(snap=>{
       const grid = document.getElementById('offers-grid');
       if(snap.empty){
