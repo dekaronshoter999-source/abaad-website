@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="html-root">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أبعاد | مساحة العمل الفاخرة · الأحساء</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;0,6..96,700;1,6..96,400&family=Jost:wght@300;400;500;600&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+/* ═══════════════════════════════════════════════
+   ABAAD — Design System v3
+   Mood : Warm · Inviting · Luxury
+   Fonts: Bodoni Moda / Noto Sans Arabic · Jost
+   Gold : #C4942A  Cream: #F5E4C0  BG: #0C0800
+═══════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C4942A; --gold-l:#E8B84B; --gold-d:#8B6914;
+  --gold-glow:0 0 40px rgba(196,148,42,.15);
+  --bg:#FAFAF5; --bg2:#F4EED8; --bg3:#EDE6CB;
+  --cream:#1A1200; --cream2:rgba(26,18,0,.68); --cream3:rgba(26,18,0,.42);
+  --glass:rgba(255,255,255,.90); --glass-b:rgba(196,148,42,.20);
+  --sb-w:270px; --top-h:64px;
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  /* Surface tokens — overridden in dark mode */
+  --sidebar-bg:rgba(255,255,255,.98);
+  --header-bg:rgba(250,250,245,.97);
+  --card-bg:#FFFFFF;
+  --card-hover-bg:#FFF8EE;
+  --hero-bg:linear-gradient(135deg,#F8F3E4 0%,#EDE5C8 60%,#F4EDD5 100%);
+  --hero-overlay:radial-gradient(ellipse at center,rgba(248,244,230,.15) 0%,rgba(240,234,210,.40) 100%);
+  --og-s:rgba(244,238,215,.94);--og-m1:rgba(244,238,215,.60);
+  --og-m2:rgba(244,238,215,.15);--og-top:rgba(244,238,215,.28);
+}
+/* ── DARK THEME ── */
+[data-theme="dark"]{
+  --bg:#0C0800; --bg2:#100C00; --bg3:#140F00;
+  --cream:#F5E4C0; --cream2:rgba(245,228,192,.72); --cream3:rgba(245,228,192,.42);
+  --glass:rgba(255,235,170,.05); --glass-b:rgba(196,148,42,.18);
+  --sidebar-bg:rgba(10,6,0,.96);
+  --header-bg:rgba(12,8,0,.96);
+  --card-bg:rgba(255,235,170,.04);
+  --card-hover-bg:rgba(196,148,42,.07);
+  --hero-bg:radial-gradient(ellipse at top,rgba(196,148,42,.06) 0%,transparent 55%),#0C0800;
+  --hero-overlay:radial-gradient(ellipse at center,rgba(196,148,42,.04) 0%,rgba(0,0,0,.15) 100%);
+  --og-s:rgba(12,8,0,.88);--og-m1:rgba(12,8,0,.60);
+  --og-m2:rgba(12,8,0,.10);--og-top:rgba(12,8,0,.20);
+}
+html{scroll-behavior:smooth;scroll-snap-type:y mandatory;font-size:16px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;scroll-snap-type:none}}
+body{background:var(--bg);color:var(--cream);overflow-x:hidden;
+  font-family:'Jost','Noto Sans Arabic',sans-serif;line-height:1.65}
+[lang="ar"] .en-only{display:none}
+[lang="en"] .ar-only{display:none}
+[lang="ar"] h1,[lang="ar"] h2,[lang="ar"] h3,[lang="ar"] h4{
+  font-family:'Noto Sans Arabic',serif;letter-spacing:0}
+[lang="en"] h1,[lang="en"] h2,[lang="en"] h3,[lang="en"] h4{
+  font-family:'Bodoni Moda',serif;letter-spacing:.03em}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--gold-d);border-radius:2px}
+
+/* ═══ UTILITY ═══ */
+.gold{color:var(--gold)}
+.shimmer-text{
+  background:linear-gradient(90deg,var(--gold-d),var(--gold-l),var(--gold),var(--gold-d));
+  background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:shimmer 4s linear infinite}
+@keyframes shimmer{0%{background-position:0 50%}100%{background-position:300% 50%}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulseBorder{0%,100%{box-shadow:0 0 0 0 rgba(196,148,42,0)}50%{box-shadow:0 0 0 4px rgba(196,148,42,.18)}}
+@keyframes countUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
+.reveal-left.visible{opacity:1;transform:translateX(0)}
+.delay-1{transition-delay:.1s}.delay-2{transition-delay:.2s}.delay-3{transition-delay:.3s}.delay-4{transition-delay:.4s}
+
+/* ═══ SIDEBAR ═══ */
+#sidebar{
+  position:fixed;top:0;bottom:0;left:0;width:var(--sb-w);
+  background:var(--sidebar-bg);border-right:1px solid rgba(196,148,42,.15);
+  z-index:300;display:flex;flex-direction:column;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:4px 0 30px rgba(196,148,42,.08);
+  transition:transform .38s var(--ease-out);overflow:hidden}
+#sidebar-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+  z-index:299;backdrop-filter:blur(3px)}
+.sb-logo{
+  padding:26px 20px 18px;border-bottom:1px solid var(--glass-b);
+  display:flex;align-items:center;gap:12px;flex-shrink:0}
+.sb-logo img{width:42px;height:42px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(196,148,42,.5))}
+.sb-brand-text{display:flex;flex-direction:column}
+.sb-brand-ar{font-family:'Noto Sans Arabic',sans-serif;font-size:1.2rem;font-weight:700;
+  color:var(--gold);line-height:1.1}
+.sb-brand-en{font-family:'Bodoni Moda',serif;font-size:.7rem;letter-spacing:.14em;
+  color:var(--cream3);text-transform:uppercase;margin-top:2px}
+.sb-lang-toggle{
+  margin:14px 20px;display:flex;background:rgba(196,148,42,.07);
+  border:1px solid rgba(196,148,42,.18);border-radius:40px;overflow:hidden;flex-shrink:0}
+.sb-lang-btn{
+  flex:1;padding:7px 10px;border:none;background:transparent;color:var(--cream3);
+  font-family:'Jost',sans-serif;font-size:.78rem;letter-spacing:.05em;cursor:pointer;
+  transition:all .25s;text-align:center}
+.sb-lang-btn.active{background:var(--gold);color:#0C0800;font-weight:600;border-radius:36px}
+.sb-scroll{flex:1;overflow-y:auto;padding:0 0 20px}
+.sb-scroll::-webkit-scrollbar{width:2px}
+.sb-scroll::-webkit-scrollbar-thumb{background:var(--gold-d)}
+.sb-section{margin-bottom:6px}
+.sb-section-title{
+  padding:14px 20px 6px;font-size:.65rem;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--gold);font-family:'Jost',sans-serif;
+  display:flex;align-items:center;gap:8px}
+.sb-section-title::after{content:'';flex:1;height:1px;background:var(--glass-b)}
+.sb-link-item{
+  display:flex;align-items:center;gap:10px;padding:9px 20px;
+  color:var(--cream2);font-size:.85rem;text-decoration:none;cursor:pointer;
+  transition:all .22s;border-left:2px solid transparent;
+  font-family:'Noto Sans Arabic','Jost',sans-serif}
+.sb-link-item:hover,.sb-link-item.active{
+  color:var(--gold);border-left-color:var(--gold);
+  background:rgba(196,148,42,.08)}
+.sb-link-item .sb-num{
+  font-family:'Jost',sans-serif;font-size:.7rem;color:var(--gold-d);
+  min-width:22px;text-align:center}
+.sb-link-item .sb-icon{width:16px;height:16px;opacity:.6;flex-shrink:0}
+.sb-link-item.active .sb-icon{opacity:1}
+.sb-cta-group{
+  padding:16px 20px;border-top:1px solid var(--glass-b);flex-shrink:0}
+.sb-cta-btn{
+  display:block;width:100%;padding:11px;text-align:center;
+  border:1.5px solid var(--gold);color:var(--gold);
+  border-radius:6px;text-decoration:none;font-family:'Jost',sans-serif;
+  font-size:.82rem;letter-spacing:.07em;cursor:pointer;
+  transition:all .25s;margin-bottom:8px;background:transparent}
+.sb-cta-btn:hover{background:var(--gold);color:#0C0800;font-weight:600}
+.sb-cta-btn.solid{background:var(--gold);color:#0C0800;font-weight:600}
+.sb-cta-btn.solid:hover{background:var(--gold-l)}
+
+/* ═══ MOBILE HEADER ═══ */
+#mobile-header{
+  display:none;position:fixed;top:0;left:0;right:0;height:var(--top-h);
+  background:var(--header-bg);border-bottom:1px solid rgba(196,148,42,.15);
+  box-shadow:0 2px 20px rgba(196,148,42,.10);
+  z-index:301;align-items:center;justify-content:space-between;padding:0 18px;
+  backdrop-filter:blur(16px)}
+#hamburger{background:none;border:none;cursor:pointer;padding:8px;
+  display:flex;flex-direction:column;gap:5px}
+#hamburger span{display:block;width:24px;height:1.5px;background:var(--gold);
+  transition:all .3s}
+#hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+#hamburger.open span:nth-child(2){opacity:0}
+#hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mob-logo{display:flex;align-items:center;gap:9px}
+.mob-logo img{width:32px;height:32px;object-fit:contain}
+.mob-logo span{font-family:'Noto Sans Arabic',sans-serif;font-weight:700;
+  color:var(--gold);font-size:1.1rem}
+.mob-lang{background:none;border:1px solid var(--glass-b);
+  color:var(--cream3);padding:6px 12px;border-radius:20px;cursor:pointer;
+  font-family:'Jost',sans-serif;font-size:.75rem}
+
+/* ═══ DOT NAV ═══ */
+#dot-nav{
+  position:fixed;right:20px;top:50%;transform:translateY(-50%);
+  z-index:200;display:flex;flex-direction:column;gap:8px}
+.dot{
+  width:8px;height:8px;border-radius:50%;background:rgba(196,148,42,.3);
+  border:1.5px solid transparent;cursor:pointer;
+  transition:all .3s var(--ease-out)}
+.dot:hover{background:rgba(196,148,42,.6);transform:scale(1.3)}
+.dot.active{background:var(--gold);border-color:rgba(196,148,42,.4);
+  box-shadow:0 0 10px rgba(196,148,42,.6);transform:scale(1.2)}
+
+/* ═══ MAIN WRAPPER ═══ */
+#main{margin-left:var(--sb-w);min-height:100vh}
+
+/* ═══ HERO ═══ */
+#hero{
+  position:relative;height:100vh;display:flex;align-items:center;
+  justify-content:center;overflow:hidden;scroll-snap-align:start;
+  background:var(--hero-bg)}
+#hero-canvas{position:absolute;inset:0;z-index:0}
+.hero-overlay{
+  position:absolute;inset:0;
+  background:var(--hero-overlay);
+  z-index:1}
+.hero-content{position:relative;z-index:2;text-align:center;padding:0 24px}
+.hero-logo{
+  width:110px;height:110px;object-fit:contain;margin:0 auto 28px;
+  filter:drop-shadow(0 0 30px rgba(196,148,42,.6));
+  animation:floatY 5s ease-in-out infinite}
+.hero-title{
+  font-size:clamp(2.8rem,6vw,5.5rem);font-weight:700;line-height:1.1;
+  margin-bottom:16px}
+[lang="ar"] .hero-title{font-family:'Noto Sans Arabic',sans-serif;font-size:clamp(2.4rem,5vw,4.8rem)}
+.hero-subtitle{
+  font-size:clamp(.95rem,2vw,1.2rem);color:var(--cream3);letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:40px;font-family:'Jost',sans-serif}
+[lang="ar"] .hero-subtitle{
+  font-family:'Noto Sans Arabic',sans-serif;letter-spacing:.04em;
+  font-size:clamp(.9rem,1.8vw,1.1rem)}
+.hero-ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-gold{
+  padding:14px 34px;background:var(--gold);color:#0C0800;
+  border:none;border-radius:4px;cursor:pointer;font-weight:600;
+  font-family:'Jost','Noto Sans Arabic',sans-serif;font-size:.95rem;
+  letter-spacing:.05em;transition:all .25s;text-decoration:none;display:inline-block}
+.btn-gold:hover{background:var(--gold-l);transform:translateY(-2px);
+  box-shadow:0 8px 30px rgba(196,148,42,.35)}
+.btn-outline{
+  padding:13px 34px;background:transparent;color:var(--gold);
+  border:1.5px solid var(--gold);border-radius:4px;cursor:pointer;
+  font-family:'Jost','Noto Sans Arabic',sans-serif;font-size:.95rem;
+  letter-spacing:.05em;transition:all .25s;text-decoration:none;display:inline-block}
+.btn-outline:hover{background:rgba(196,148,42,.12);transform:translateY(-2px)}
+.hero-scroll{
+  position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:var(--cream3);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;
+  font-family:'Jost',sans-serif;animation:fadeIn 1s 1.5s both}
+.scroll-line{width:1px;height:48px;background:linear-gradient(to bottom,var(--gold),transparent);
+  animation:floatY 2s ease-in-out infinite}
+
+/* ═══ STATS ═══ */
+#stats{
+  scroll-snap-align:start;background:var(--bg2);
+  border-top:1px solid var(--glass-b);border-bottom:1px solid var(--glass-b);
+  padding:60px 48px;display:grid;grid-template-columns:repeat(4,1fr);gap:32px}
+.stat-item{text-align:center;padding:20px 10px}
+.stat-num{
+  font-family:'Bodoni Moda',serif;font-size:clamp(2.4rem,4vw,3.8rem);font-weight:700;
+  color:var(--gold);line-height:1;margin-bottom:8px;display:block}
+[lang="ar"] .stat-num{font-family:'Noto Sans Arabic',sans-serif}
+.stat-label{
+  font-size:.82rem;color:var(--cream3);letter-spacing:.08em;text-transform:uppercase;
+  font-family:'Jost',sans-serif}
+[lang="ar"] .stat-label{font-family:'Noto Sans Arabic',sans-serif;letter-spacing:0}
+.stat-divider{width:32px;height:1.5px;background:var(--gold);margin:10px auto 0;border-radius:2px}
+
+/* ═══ AMENITIES ═══ */
+#amenities{
+  scroll-snap-align:start;padding:80px 48px;background:var(--bg)}
+.section-header{text-align:center;margin-bottom:60px}
+.section-tag{
+  display:inline-block;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);font-family:'Jost',sans-serif;margin-bottom:12px;
+  border:1px solid rgba(196,148,42,.3);border-radius:20px;padding:4px 14px}
+.section-title{
+  font-size:clamp(1.8rem,3.5vw,3rem);font-weight:700;color:var(--cream);margin-bottom:12px}
+.section-sub{font-size:.95rem;color:var(--cream3);max-width:520px;margin:0 auto;line-height:1.7}
+.amenities-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:1200px;margin:0 auto}
+.amenity-card{
+  background:var(--card-bg);border:1px solid rgba(196,148,42,.16);border-radius:12px;
+  padding:28px 22px;text-align:center;
+  box-shadow:0 2px 18px rgba(196,148,42,.08);
+  transition:all .3s var(--ease-out);cursor:default}
+.amenity-card:hover{
+  border-color:rgba(196,148,42,.40);background:var(--card-hover-bg);
+  transform:translateY(-4px);box-shadow:0 16px 40px rgba(196,148,42,.18)}
+.amenity-icon{
+  width:48px;height:48px;margin:0 auto 16px;display:flex;
+  align-items:center;justify-content:center}
+.amenity-icon svg{width:100%;height:100%;stroke:var(--gold);fill:none;stroke-width:1.5}
+.amenity-name{
+  font-size:.88rem;font-weight:600;color:var(--cream);margin-bottom:5px;
+  font-family:'Jost','Noto Sans Arabic',sans-serif}
+[lang="ar"] .amenity-name{font-family:'Noto Sans Arabic',sans-serif}
+.amenity-desc{font-size:.76rem;color:var(--cream3);line-height:1.5}
+
+/* ═══ OFFICE SECTIONS ═══ */
+.office-section{
+  position:relative;height:100vh;overflow:hidden;
+  scroll-snap-align:start;cursor:default}
+.office-bg{
+  position:absolute;inset:0;background-size:cover;background-position:center;
+  will-change:transform;transition:transform .1s linear}
+.office-bg img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transform:scale(1.08);will-change:transform}
+.office-grad{
+  position:absolute;inset:0;
+  background:linear-gradient(
+    to top,
+    var(--og-s) 0%,
+    var(--og-m1) 40%,
+    var(--og-m2) 72%,
+    var(--og-top) 100%)}
+.office-num{
+  position:absolute;top:10%;right:6%;
+  font-family:'Bodoni Moda',serif;font-size:clamp(5rem,12vw,11rem);font-weight:700;
+  color:rgba(196,148,42,.12);line-height:1;letter-spacing:-.02em;
+  user-select:none;pointer-events:none}
+[lang="ar"] .office-num{font-family:'Noto Sans Arabic',sans-serif}
+.office-info{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:36px 44px 100px;display:flex;align-items:flex-end;justify-content:space-between;
+  gap:24px}
+.office-text-col{flex:1}
+.office-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  border:1px solid rgba(196,148,42,.45);border-radius:20px;
+  padding:4px 14px;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gold);font-family:'Jost',sans-serif;margin-bottom:12px}
+[lang="ar"] .office-badge{font-family:'Noto Sans Arabic',sans-serif;letter-spacing:0}
+.office-name{
+  font-size:clamp(1.6rem,3.5vw,3rem);font-weight:700;color:var(--cream);
+  margin-bottom:8px;line-height:1.15}
+[lang="ar"] .office-name{font-family:'Noto Sans Arabic',sans-serif}
+.office-floor{
+  font-size:.82rem;color:var(--cream3);font-family:'Jost','Noto Sans Arabic',sans-serif}
+.office-desc{
+  font-size:.88rem;color:var(--cream2);margin-top:10px;max-width:480px;line-height:1.6}
+.office-action-col{
+  display:flex;flex-direction:column;align-items:flex-end;gap:14px;flex-shrink:0}
+.office-price{
+  font-family:'Bodoni Moda',serif;font-size:1.1rem;color:var(--gold);
+  text-align:right}
+[lang="ar"] .office-price{font-family:'Noto Sans Arabic',sans-serif}
+.office-price-sub{font-size:.72rem;color:var(--cream3);font-family:'Jost',sans-serif;margin-top:2px}
+.btn-book{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 28px;background:var(--gold);color:#0C0800;
+  border:none;border-radius:4px;cursor:pointer;font-weight:700;
+  font-family:'Jost','Noto Sans Arabic',sans-serif;font-size:.88rem;
+  letter-spacing:.05em;transition:all .25s;text-decoration:none;
+  white-space:nowrap}
+.btn-book:hover{background:var(--gold-l);transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(196,148,42,.4)}
+.btn-book svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
+/* Photo thumbnails — very bottom of section, in dark gradient zone */
+.office-thumbs{
+  position:absolute;bottom:44px;left:50%;
+  transform:translateX(-50%);
+  display:flex;gap:10px;z-index:5;white-space:nowrap;
+  padding:8px 14px;
+  background:rgba(255,255,255,.25);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-radius:10px;border:1px solid rgba(196,148,42,.30)}
+.thumb{
+  width:52px;height:36px;object-fit:cover;border-radius:4px;
+  border:1.5px solid transparent;cursor:pointer;opacity:.6;
+  transition:all .25s}
+.thumb:hover{opacity:.9;border-color:rgba(196,148,42,.5)}
+.thumb.active{opacity:1;border-color:var(--gold);box-shadow:0 0 10px rgba(196,148,42,.4)}
+/* Reveal state */
+.office-info,.office-num,.office-thumbs{
+  opacity:0;transform:translateY(20px);
+  transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
+.office-section.in-view .office-info,
+.office-section.in-view .office-num{opacity:1;transform:translateY(0)}
+.office-section.in-view .office-thumbs{opacity:1;transform:translateY(0);transition-delay:.2s}
+.office-section.in-view .office-info{transition-delay:.1s}
+
+/* ═══ PARTNER OFFERS PREVIEW ═══ */
+#partner-offers{
+  scroll-snap-align:start;padding:80px 48px;background:var(--bg2)}
+.offers-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:22px;
+  max-width:1100px;margin:40px auto 40px}
+.offer-card{
+  background:var(--card-bg);border:1px solid rgba(196,148,42,.16);border-radius:12px;
+  overflow:hidden;box-shadow:0 2px 18px rgba(196,148,42,.08);
+  transition:all .3s var(--ease-out);cursor:pointer}
+.offer-card:hover{border-color:rgba(196,148,42,.40);transform:translateY(-4px);
+  box-shadow:0 16px 40px rgba(196,148,42,.18)}
+.offer-img{width:100%;height:160px;object-fit:cover;display:block}
+.offer-img-placeholder{
+  width:100%;height:160px;background:linear-gradient(135deg,#F4EDD8,#EDE3C2);
+  display:flex;align-items:center;justify-content:center}
+.offer-img-placeholder svg{width:40px;height:40px;stroke:var(--gold-d);fill:none;stroke-width:1.5}
+.offer-body{padding:18px}
+.offer-brand{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);font-family:'Jost',sans-serif;margin-bottom:6px}
+.offer-title{font-size:.95rem;font-weight:600;color:var(--cream);margin-bottom:6px;
+  font-family:'Jost','Noto Sans Arabic',sans-serif}
+[lang="ar"] .offer-title{font-family:'Noto Sans Arabic',sans-serif}
+.offer-desc{font-size:.78rem;color:var(--cream3);line-height:1.5}
+.offers-cta{text-align:center}
+.loading-text{color:var(--cream3);font-size:.88rem;padding:30px;
+  text-align:center;font-family:'Jost',sans-serif}
+
+/* ═══ TESTIMONIALS ═══ */
+#testimonials{
+  scroll-snap-align:start;padding:80px 48px;background:var(--bg)}
+.testimonials-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:22px;
+  max-width:1100px;margin:40px auto 0}
+.testi-card{
+  background:var(--card-bg);border:1px solid rgba(196,148,42,.16);border-radius:12px;
+  padding:28px 26px;box-shadow:0 2px 18px rgba(196,148,42,.07);
+  transition:all .3s var(--ease-out)}
+.testi-card:hover{border-color:rgba(196,148,42,.35);transform:translateY(-3px);
+  box-shadow:0 10px 32px rgba(196,148,42,.15)}
+.testi-quote{
+  font-size:2.5rem;color:rgba(196,148,42,.3);font-family:'Bodoni Moda',serif;
+  line-height:1;margin-bottom:10px;display:block}
+.testi-text{
+  font-size:.92rem;color:var(--cream2);line-height:1.7;margin-bottom:20px;
+  font-family:'Noto Sans Arabic','Jost',sans-serif}
+.testi-author{display:flex;align-items:center;gap:12px}
+.testi-avatar{
+  width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold-d),var(--gold));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Jost',sans-serif;font-weight:700;color:#0C0800;font-size:1rem;flex-shrink:0}
+.testi-name{font-size:.85rem;font-weight:600;color:var(--cream);
+  font-family:'Noto Sans Arabic','Jost',sans-serif}
+.testi-role{font-size:.74rem;color:var(--cream3);font-family:'Jost',sans-serif}
+
+/* ═══ FOOTER ═══ */
+#footer{
+  scroll-snap-align:start;background:var(--bg3);
+  border-top:1px solid var(--glass-b);padding:60px 48px 40px}
+.footer-grid{
+  display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;max-width:1100px;margin:0 auto}
+.footer-brand img{width:56px;height:56px;object-fit:contain;margin-bottom:16px}
+.footer-brand-name{
+  font-family:'Noto Sans Arabic',sans-serif;font-size:1.5rem;font-weight:700;
+  color:var(--gold);margin-bottom:8px}
+[lang="en"] .footer-brand-name{font-family:'Bodoni Moda',serif}
+.footer-tagline{font-size:.85rem;color:var(--cream3);line-height:1.6;max-width:260px}
+.footer-heading{
+  font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);font-family:'Jost',sans-serif;margin-bottom:18px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-links a{
+  color:var(--cream3);text-decoration:none;font-size:.85rem;
+  transition:color .22s;font-family:'Jost','Noto Sans Arabic',sans-serif}
+[lang="ar"] .footer-links a{font-family:'Noto Sans Arabic',sans-serif}
+.footer-links a:hover{color:var(--gold)}
+.footer-contact-item{
+  display:flex;align-items:center;gap:10px;margin-bottom:12px;
+  color:var(--cream3);font-size:.84rem}
+.footer-contact-item svg{width:16px;height:16px;stroke:var(--gold);fill:none;
+  stroke-width:1.8;flex-shrink:0}
+.footer-bottom{
+  max-width:1100px;margin:40px auto 0;padding-top:24px;
+  border-top:1px solid var(--glass-b);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-copy{font-size:.76rem;color:var(--cream3);font-family:'Jost',sans-serif}
+.footer-admin-link{
+  font-size:.72rem;color:var(--cream3);text-decoration:none;
+  font-family:'Jost',sans-serif;opacity:.5;transition:opacity .22s}
+.footer-admin-link:hover{opacity:1;color:var(--gold)}
+.social-links{display:flex;gap:12px}
+.social-link{
+  width:36px;height:36px;border-radius:50%;border:1px solid var(--glass-b);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s;text-decoration:none}
+.social-link:hover{border-color:var(--gold);background:rgba(196,148,42,.1)}
+.social-link svg{width:16px;height:16px;fill:var(--cream3);transition:fill .25s}
+.social-link:hover svg{fill:var(--gold)}
+
+/* ═══ ABAAD-OFFERS PREVIEW SECTION ═══ */
+#abaad-programs{
+  scroll-snap-align:start;padding:80px 48px;background:var(--bg)}
+.programs-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:22px;
+  max-width:1100px;margin:40px auto 40px}
+.program-card{
+  background:var(--card-bg);border:1px solid rgba(196,148,42,.16);border-radius:12px;
+  padding:26px;box-shadow:0 2px 18px rgba(196,148,42,.07);
+  transition:all .3s var(--ease-out);cursor:pointer;
+  display:flex;flex-direction:column}
+.program-card:hover{border-color:rgba(196,148,42,.4);transform:translateY(-4px);
+  box-shadow:0 16px 40px rgba(196,148,42,.18)}
+.prog-icon{
+  width:48px;height:48px;border-radius:8px;background:rgba(196,148,42,.12);
+  border:1px solid rgba(196,148,42,.25);display:flex;align-items:center;
+  justify-content:center;margin-bottom:16px}
+.prog-icon svg{width:24px;height:24px;stroke:var(--gold);fill:none;stroke-width:1.8}
+.prog-tag{
+  font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);font-family:'Jost',sans-serif;margin-bottom:6px}
+.prog-name{
+  font-size:1rem;font-weight:600;color:var(--cream);margin-bottom:8px;
+  font-family:'Noto Sans Arabic','Jost',sans-serif;line-height:1.4}
+.prog-desc{font-size:.8rem;color:var(--cream3);line-height:1.6;flex:1;margin-bottom:16px}
+.prog-footer{display:flex;align-items:center;justify-content:space-between}
+.prog-price{font-size:.9rem;font-weight:600;color:var(--gold)}
+.prog-cta-link{
+  font-size:.76rem;color:var(--gold);text-decoration:none;
+  display:flex;align-items:center;gap:4px;transition:gap .22s}
+.prog-cta-link:hover{gap:8px}
+.prog-cta-link svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:1024px){
+  .amenities-grid{grid-template-columns:repeat(2,1fr)}
+  .testimonials-grid{grid-template-columns:repeat(2,1fr)}
+  .programs-grid{grid-template-columns:repeat(2,1fr)}
+  .offers-grid{grid-template-columns:repeat(2,1fr)}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  #stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  #sidebar{transform:translateX(-100%)}
+  #sidebar.open{transform:translateX(0)}
+  [lang="ar"] #sidebar{transform:translateX(-100%)}
+  [lang="ar"] #sidebar.open{transform:translateX(0)}
+  #sidebar-overlay.visible{display:block}
+  #mobile-header{display:flex}
+  #main{margin-left:0;padding-top:var(--top-h)}
+  #dot-nav{right:10px}
+  .dot{width:6px;height:6px}
+  .office-info{padding:20px 16px 86px;flex-direction:column;align-items:flex-start;gap:16px}
+  .office-action-col{align-items:flex-start}
+  .office-name{font-size:clamp(1.4rem,5vw,2rem)}
+  .office-thumbs{bottom:32px;left:50%;transform:translateX(-50%)}
+  .thumb{width:44px;height:30px}
+  #stats{grid-template-columns:repeat(2,1fr);padding:40px 24px}
+  #amenities,#partner-offers,#testimonials,#footer,#abaad-programs{padding:60px 20px}
+  .amenities-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .testimonials-grid,.programs-grid,.offers-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr}
+  .hero-ctas{flex-direction:column;align-items:center}
+  .btn-gold,.btn-outline{width:220px;text-align:center}
+  .office-num{font-size:5rem;right:8%;top:8%}
+}
+@media(max-width:480px){
+  .amenities-grid{grid-template-columns:1fr}
+  #stats{grid-template-columns:1fr 1fr}
+  .footer-bottom{flex-direction:column;text-align:center}
+}
+
+/* ── Office sections: true full-viewport width on desktop ── */
+@media(min-width:769px){
+  .office-section{
+    width:100vw;
+    margin-left:calc(-1 * var(--sb-w));
+  }
+  .office-info{
+    padding-left:calc(var(--sb-w) + 30px);
+  }
+}
+
+/* ═══ THEME TOGGLE ═══ */
+.sb-theme-row{padding:0 20px 14px;flex-shrink:0}
+.sb-theme-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;padding:9px 14px;
+  background:rgba(196,148,42,.07);border:1px solid var(--glass-b);
+  border-radius:8px;cursor:pointer;
+  font-family:'Jost',sans-serif;font-size:.78rem;color:var(--cream2);
+  transition:all .25s}
+.sb-theme-btn:hover{background:rgba(196,148,42,.14);border-color:rgba(196,148,42,.35)}
+.theme-icon-wrap{
+  width:28px;height:16px;border-radius:8px;
+  background:rgba(196,148,42,.20);border:1px solid var(--glass-b);
+  position:relative;transition:background .3s}
+.theme-icon-wrap::after{
+  content:'';position:absolute;top:2px;left:2px;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--gold);transition:transform .3s}
+[data-theme="dark"] .theme-icon-wrap{background:rgba(196,148,42,.35)}
+[data-theme="dark"] .theme-icon-wrap::after{transform:translateX(12px)}
+/* Mobile theme btn */
+.mob-theme-btn{
+  background:none;border:1px solid var(--glass-b);
+  color:var(--cream2);width:36px;height:36px;border-radius:50%;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .25s;flex-shrink:0}
+.mob-theme-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;transition:opacity .25s}
+.mob-theme-btn .sun-icon{display:none}
+.mob-theme-btn .moon-icon{display:block}
+[data-theme="dark"] .mob-theme-btn .sun-icon{display:block}
+[data-theme="dark"] .mob-theme-btn .moon-icon{display:none}
+/* sb-lang-btn active contrast fix for dark mode */
+[data-theme="dark"] .sb-lang-btn.active{color:#0C0800}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside id="sidebar">
+  <div class="sb-logo">
+    <img src="images/logo.png" alt="أبعاد">
+    <div class="sb-brand-text">
+      <span class="sb-brand-ar ar-only">أبعاد</span>
+      <span class="sb-brand-ar en-only" style="font-family:'Bodoni Moda',serif">Abaad</span>
+      <span class="sb-brand-en ar-only">COWORKING SPACE</span>
+      <span class="sb-brand-en en-only">مساحة العمل</span>
+    </div>
+  </div>
+  <div class="sb-lang-toggle">
+    <button class="sb-lang-btn active" id="lang-ar-btn" onclick="setLang('ar')">العربية</button>
+    <button class="sb-lang-btn" id="lang-en-btn" onclick="setLang('en')">EN</button>
+  </div>
+  <div class="sb-theme-row">
+    <button class="sb-theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span>
+        <span class="ar-only" id="theme-label-ar">الوضع الليلي</span>
+        <span class="en-only" id="theme-label-en">Dark Mode</span>
+      </span>
+      <div class="theme-icon-wrap"></div>
+    </button>
+  </div>
+  <div class="sb-scroll">
+    <!-- Spaces -->
+    <div class="sb-section">
+      <div class="sb-section-title ar-only">المساحات</div>
+      <div class="sb-section-title en-only">Spaces</div>
+      <div id="sb-offices-list"></div>
+    </div>
+    <!-- Partner Offers -->
+    <div class="sb-section">
+      <div class="sb-section-title ar-only">عروض الشركاء</div>
+      <div class="sb-section-title en-only">Partner Offers</div>
+      <a href="partner-offers.html" class="sb-link-item">
+        <svg class="sb-icon" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+        <span class="ar-only">استعرض جميع العروض</span>
+        <span class="en-only">Browse All Offers</span>
+      </a>
+    </div>
+    <!-- Abaad Programs -->
+    <div class="sb-section">
+      <div class="sb-section-title ar-only">برامج أبعاد</div>
+      <div class="sb-section-title en-only">Abaad Programs</div>
+      <a href="#abaad-programs" class="sb-link-item" onclick="closeSidebar()">
+        <svg class="sb-icon" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        <span class="ar-only">استعرض البرامج</span>
+        <span class="en-only">Browse Programs</span>
+      </a>
+      <a href="abaad-offers.html" class="sb-link-item" onclick="closeSidebar()">
+        <svg class="sb-icon" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="ar-only">الصفحة الكاملة</span>
+        <span class="en-only">Full Programs Page</span>
+      </a>
+    </div>
+  </div>
+  <div class="sb-cta-group">
+    <a href="partner-offers.html" class="sb-cta-btn">
+      <span class="ar-only">عروض الشركاء</span>
+      <span class="en-only">Partner Offers</span>
+    </a>
+    <a href="#hero" class="sb-cta-btn solid" onclick="closeSidebar()">
+      <span class="ar-only">احجز مكتبك</span>
+      <span class="en-only">Book Your Space</span>
+    </a>
+  </div>
+</aside>
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ═══ MOBILE HEADER ═══ -->
+<header id="mobile-header">
+  <button id="hamburger" aria-label="Toggle menu" onclick="toggleSidebar()">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="mob-logo">
+    <img src="images/logo.png" alt="أبعاد">
+    <span class="ar-only">أبعاد</span>
+    <span class="en-only" style="font-family:'Bodoni Moda',serif">Abaad</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="mob-theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+      <!-- Moon (shown in light mode) -->
+      <svg class="moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      <!-- Sun (shown in dark mode) -->
+      <svg class="sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <button class="mob-lang" onclick="toggleLang()">
+      <span class="ar-only">EN</span>
+      <span class="en-only">عر</span>
+    </button>
+  </div>
+</header>
+
+<!-- ═══ DOT NAVIGATION ═══ -->
+<nav id="dot-nav" aria-label="Page sections"></nav>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<main id="main">
+
+  <!-- HERO -->
+  <section id="hero" data-section="hero">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <img src="images/logo.png" alt="أبعاد" class="hero-logo">
+      <h1 class="hero-title shimmer-text">
+        <span class="ar-only">أبعاد</span>
+        <span class="en-only">ABAAD</span>
+      </h1>
+      <p class="hero-subtitle">
+        <span class="ar-only">حيث تُبنى الأعمال · الأحساء · الطابق السابع</span>
+        <span class="en-only">Where Business Thrives · Al-Ahsa · Floor Seven</span>
+      </p>
+      <div class="hero-ctas">
+        <a href="#office-4" class="btn-gold">
+          <span class="ar-only">استعرض المساحات</span>
+          <span class="en-only">Browse Spaces</span>
+        </a>
+        <a href="#footer" class="btn-outline">
+          <span class="ar-only">تواصل معنا</span>
+          <span class="en-only">Contact Us</span>
+        </a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+      <span class="ar-only">مرّر للأسفل</span>
+      <span class="en-only">SCROLL</span>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section id="stats" data-section="stats">
+    <div class="stat-item reveal delay-1">
+      <span class="stat-num" data-count="12">12</span>
+      <div class="stat-label ar-only">مكتب وقاعة</div>
+      <div class="stat-label en-only">Offices & Halls</div>
+      <div class="stat-divider"></div>
+    </div>
+    <div class="stat-item reveal delay-2">
+      <span class="stat-num" data-count="7">7</span>
+      <div class="stat-label ar-only">الطابق السابع</div>
+      <div class="stat-label en-only">Floor Seven</div>
+      <div class="stat-divider"></div>
+    </div>
+    <div class="stat-item reveal delay-3">
+      <span class="stat-num" data-count="200">200+</span>
+      <div class="stat-label ar-only">عضو نشط</div>
+      <div class="stat-label en-only">Active Members</div>
+      <div class="stat-divider"></div>
+    </div>
+    <div class="stat-item reveal delay-4">
+      <span class="stat-num" data-count="5">5+</span>
+      <div class="stat-label ar-only">سنوات خبرة</div>
+      <div class="stat-label en-only">Years of Excellence</div>
+      <div class="stat-divider"></div>
+    </div>
+  </section>
+
+  <!-- AMENITIES -->
+  <section id="amenities" data-section="amenities">
+    <div class="section-header reveal">
+      <div class="section-tag ar-only">مميزات المكان</div>
+      <div class="section-tag en-only">What We Offer</div>
+      <h2 class="section-title">
+        <span class="ar-only">كل ما تحتاجه في مكان واحد</span>
+        <span class="en-only">Everything You Need</span>
+      </h2>
+      <p class="section-sub ar-only">بيئة عمل مجهزة بالكامل لتُركّز على ما يهم: نموّ أعمالك</p>
+      <p class="section-sub en-only">A fully-equipped workspace so you can focus on what matters most — growing your business</p>
+    </div>
+    <div class="amenities-grid" id="amenities-grid"></div>
+  </section>
+
+  <!-- OFFICE SECTIONS — generated by JS -->
+  <div id="offices-container"></div>
+
+  <!-- PARTNER OFFERS PREVIEW -->
+  <section id="partner-offers" data-section="partner-offers">
+    <div class="section-header reveal">
+      <div class="section-tag ar-only">شركاؤنا</div>
+      <div class="section-tag en-only">Partners</div>
+      <h2 class="section-title">
+        <span class="ar-only">عروض حصرية لأعضاء أبعاد</span>
+        <span class="en-only">Exclusive Member Offers</span>
+      </h2>
+      <p class="section-sub ar-only">تمتّع بخصومات وعروض مميزة من كبار الشركاء</p>
+      <p class="section-sub en-only">Enjoy exclusive discounts and offers from top partner brands</p>
+    </div>
+    <div class="offers-grid" id="offers-grid">
+      <div class="loading-text ar-only">جار التحميل...</div>
+      <div class="loading-text en-only">Loading...</div>
+    </div>
+    <div class="offers-cta reveal">
+      <a href="partner-offers.html" class="btn-outline" style="font-size:.88rem">
+        <span class="ar-only">استعرض جميع العروض</span>
+        <span class="en-only">View All Offers</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ABAAD PROGRAMS PREVIEW -->
+  <section id="abaad-programs" data-section="abaad-programs">
+    <div class="section-header reveal">
+      <div class="section-tag ar-only">برامجنا</div>
+      <div class="section-tag en-only">Programs</div>
+      <h2 class="section-title">
+        <span class="ar-only">برامج وخدمات أبعاد</span>
+        <span class="en-only">Abaad Programs & Services</span>
+      </h2>
+      <p class="section-sub ar-only">دورات تدريبية وبرامج متخصصة لتطوير مهاراتك ومسيرتك المهنية</p>
+      <p class="section-sub en-only">Training courses and specialized programs to develop your skills and professional career</p>
+    </div>
+    <div class="programs-grid" id="programs-grid">
+      <div class="loading-text ar-only">جار التحميل...</div>
+      <div class="loading-text en-only">Loading...</div>
+    </div>
+    <div class="offers-cta reveal" style="text-align:center">
+      <a href="abaad-offers.html" class="btn-gold">
+        <span class="ar-only">استعرض كل البرامج</span>
+        <span class="en-only">View All Programs</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials" data-section="testimonials">
+    <div class="section-header reveal">
+      <div class="section-tag ar-only">آراء الأعضاء</div>
+      <div class="section-tag en-only">Testimonials</div>
+      <h2 class="section-title">
+        <span class="ar-only">ماذا يقول أعضاؤنا</span>
+        <span class="en-only">What Our Members Say</span>
+      </h2>
+    </div>
+    <div class="testimonials-grid" id="testi-grid"></div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="footer" data-section="footer">
+    <div class="footer-grid">
+      <div class="footer-brand reveal">
+        <img src="images/logo.png" alt="أبعاد">
+        <div class="footer-brand-name ar-only">أبعاد للأعمال</div>
+        <div class="footer-brand-name en-only">Abaad Coworking</div>
+        <p class="footer-tagline ar-only">مساحة عمل رائدة في الأحساء تجمع رواد الأعمال والمبدعين في بيئة ملهمة</p>
+        <p class="footer-tagline en-only">A leading coworking space in Al-Ahsa bringing entrepreneurs and creators together in an inspiring environment</p>
+        <div class="social-links" style="margin-top:20px">
+          <!-- Instagram -->
+          <a href="#" class="social-link" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" width="18" height="18"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+          <!-- Twitter/X -->
+          <a href="#" class="social-link" aria-label="Twitter">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
+          </a>
+          <!-- WhatsApp -->
+          <a href="#" class="social-link" aria-label="WhatsApp">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="reveal delay-1">
+        <div class="footer-heading ar-only">روابط سريعة</div>
+        <div class="footer-heading en-only">Quick Links</div>
+        <ul class="footer-links">
+          <li><a href="#hero" class="ar-only">الرئيسية</a><a href="#hero" class="en-only">Home</a></li>
+          <li><a href="#office-4" class="ar-only">المساحات</a><a href="#office-4" class="en-only">Spaces</a></li>
+          <li><a href="#partner-offers" class="ar-only">عروض الشركاء</a><a href="#partner-offers" class="en-only">Partner Offers</a></li>
+          <li><a href="abaad-offers.html" class="ar-only">برامج أبعاد</a><a href="abaad-offers.html" class="en-only">Abaad Programs</a></li>
+          <li><a href="partner-offers.html" class="ar-only">عروض الشركاء (كاملة)</a><a href="partner-offers.html" class="en-only">All Partner Offers</a></li>
+        </ul>
+      </div>
+      <div class="reveal delay-2">
+        <div class="footer-heading ar-only">تواصل معنا</div>
+        <div class="footer-heading en-only">Contact</div>
+        <div class="footer-contact-item">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span class="ar-only">الأحساء، المنطقة الشرقية · الطابق السابع</span>
+          <span class="en-only">Al-Ahsa, Eastern Province · Floor 7</span>
+        </div>
+        <div class="footer-contact-item">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.26 13a19.79 19.79 0 01-3.07-8.67A2 2 0 013.17 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.91 9.91a16 16 0 006.16 6.16l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+          <span>+966 5X XXX XXXX</span>
+        </div>
+        <div class="footer-contact-item">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <span>info@abaad.sa</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy ar-only">© 2026 أبعاد للأعمال — جميع الحقوق محفوظة</span>
+      <span class="footer-copy en-only">© 2026 Abaad Coworking — All Rights Reserved</span>
+    </div>
+  </footer>
+
+</main>
+
+<!-- ═══════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════ -->
+<script>
+// ── FIREBASE ──
+const FB = {
+  apiKey:"AIzaSyBMil1i4ba4gIzpV4PGOUDZrPh5vWH3riI",
+  authDomain:"abaad-39b3c.firebaseapp.com",
+  projectId:"abaad-39b3c",
+  storageBucket:"abaad-39b3c.firebasestorage.app",
+  messagingSenderId:"750678331728",
+  appId:"1:750678331728:web:c3f4c7c5c678d87da51c55"
+};
+firebase.initializeApp(FB);
+const db = firebase.firestore();
+
+// ── THEME ──
+let currentTheme = localStorage.getItem('abaad_theme') || 'light';
+let heroParticles = null; // set by Three.js init
+
+function applyTheme(theme){
+  const html = document.getElementById('html-root');
+  const isDark = theme === 'dark';
+  if(isDark) html.setAttribute('data-theme','dark');
+  else html.removeAttribute('data-theme');
+  // Update label text
+  const labelAr = document.getElementById('theme-label-ar');
+  const labelEn = document.getElementById('theme-label-en');
+  if(labelAr) labelAr.textContent = isDark ? 'الوضع الفاتح' : 'الوضع الليلي';
+  if(labelEn) labelEn.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+  // Update Three.js particle color if ready
+  if(heroParticles){
+    heroParticles.material.color.set(isDark ? 0xC4942A : 0x8B6914);
+    heroParticles.material.opacity = isDark ? 0.45 : 0.50;
+  }
+  localStorage.setItem('abaad_theme', theme);
+}
+function toggleTheme(){
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+  applyTheme(currentTheme);
+}
+
+// ── LANGUAGE ──
+let currentLang = localStorage.getItem('abaad_lang') || 'ar';
+function setLang(lang){
+  currentLang = lang;
+  document.getElementById('html-root').lang = lang;
+  document.getElementById('html-root').dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.getElementById('lang-ar-btn').classList.toggle('active', lang==='ar');
+  document.getElementById('lang-en-btn').classList.toggle('active', lang==='en');
+  localStorage.setItem('abaad_lang', lang);
+  renderSidebarOffices();
+  renderTestimonials();
+}
+function toggleLang(){ setLang(currentLang === 'ar' ? 'en' : 'ar'); }
+document.addEventListener('DOMContentLoaded',()=>{
+  setLang(currentLang);
+  applyTheme(currentTheme);
+});
+
+// ── SIDEBAR ──
+function toggleSidebar(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  const hb = document.getElementById('hamburger');
+  const open = sb.classList.toggle('open');
+  ov.classList.toggle('visible', open);
+  hb.classList.toggle('open', open);
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('visible');
+  document.getElementById('hamburger').classList.remove('open');
+}
+
+// ── OFFICES DATA ──
+const OFFICES = [
+  {
+    id:'office-4', num:'04',
+    name:{ar:'مكتب ٤', en:'Office 04'},
+    type:{ar:'مكتب خاص', en:'Private Office'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
+    desc:{ar:'مكتب خاص بإطلالة هادئة وأجواء احترافية ملهمة لأعمالك', en:'A private office with serene views and a professional atmosphere to inspire your work'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/office-4.jpg',
+    photos:['images/office-4.jpg','images/office-4b.jpg','images/office-4c.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'#',
+    fallback:'linear-gradient(135deg,#1A1000,#2E1D00)'
+  },
+  {
+    id:'office-10', num:'10',
+    name:{ar:'مكتب ١٠', en:'Office 10'},
+    type:{ar:'مكتب خاص', en:'Private Office'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
+    desc:{ar:'مكتب واسع يتيح لك بيئة إنتاجية هادئة ومريحة', en:'A spacious office offering a quiet and comfortable productive environment'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/office-10.jpg',
+    photos:['images/office-10.jpg','images/office-10b.jpg','images/office-10c.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'#',
+    fallback:'linear-gradient(135deg,#1A1200,#2A1A00)'
+  },
+  {
+    id:'office-16', num:'16',
+    name:{ar:'مكتب ١٦', en:'Office 16'},
+    type:{ar:'مكتب خاص', en:'Private Office'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'١–٣ أشخاص', en:'1–3 People'},
+    desc:{ar:'مكتب بتصميم عصري يجمع بين الخصوصية والتواصل مع مجتمع الأعمال', en:'A modernly designed office combining privacy with business community connectivity'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/office-16.jpg',
+    photos:['images/office-16.jpg','images/office-16b.jpg','images/office-16c.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'#',
+    fallback:'linear-gradient(135deg,#150E00,#241800)'
+  },
+  {
+    id:'office-17', num:'17',
+    name:{ar:'مكتب ١٧', en:'Office 17'},
+    type:{ar:'مكتب خاص', en:'Private Office'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
+    desc:{ar:'بيئة عمل مثالية مجهزة بالكامل لاحتياجاتك اليومية والمهنية', en:'An ideal fully-equipped work environment for your daily and professional needs'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/office-17.jpg',
+    photos:['images/office-17.jpg','images/office-17b.jpg','images/office-17c.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'#',
+    fallback:'linear-gradient(135deg,#120C00,#221600)'
+  },
+  {
+    id:'office-18', num:'18',
+    name:{ar:'مكتب ١٨', en:'Office 18'},
+    type:{ar:'مكتب خاص', en:'Private Office'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
+    desc:{ar:'مكتب راقٍ يتيح لك التركيز والإبداع في أجواء مهنية مريحة', en:'An upscale office allowing focus and creativity in a comfortable professional atmosphere'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/office-18.jpg',
+    photos:['images/office-18.jpg','images/office-18b.jpg','images/office-18c.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'#',
+    fallback:'linear-gradient(135deg,#1A1000,#2C1C00)'
+  },
+  {
+    id:'office-19', num:'19',
+    name:{ar:'مكتب ١٩', en:'Office 19'},
+    type:{ar:'مكتب خاص', en:'Private Office'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
+    desc:{ar:'مكتب مميز يوفر الهدوء والخصوصية اللازمة لإنجاز أعمالك', en:'A distinguished office providing the quiet and privacy needed to accomplish your work'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/office-19.jpg',
+    photos:['images/office-19.jpg','images/office-19b.jpg','images/office-19c.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'#',
+    fallback:'linear-gradient(135deg,#130D00,#221700)'
+  },
+  {
+    id:'office-24', num:'24',
+    name:{ar:'مكتب ٢٤', en:'Office 24'},
+    type:{ar:'مكتب خاص', en:'Private Office'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
+    desc:{ar:'مكتب متميز بمساحة ملائمة تُلبّي احتياجات الفرق الصغيرة', en:'A distinguished office with suitable space meeting the needs of small teams'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/office-24.jpg',
+    photos:['images/office-24.jpg','images/office-24b.jpg','images/office-24c.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'#',
+    fallback:'linear-gradient(135deg,#150E00,#251A00)'
+  },
+  {
+    id:'office-27', num:'27',
+    name:{ar:'مكتب ٢٧', en:'Office 27'},
+    type:{ar:'مكتب خاص', en:'Private Office'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
+    desc:{ar:'مكتب هادئ ومريح يوفر أجواء عمل احترافية وملهمة في قلب أبعاد', en:'A quiet and comfortable office providing a professional and inspiring work atmosphere at the heart of Abaad'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/office-27.jpg',
+    photos:['images/office-27.jpg','images/office-27b.jpg','images/office-27c.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'#',
+    fallback:'linear-gradient(135deg,#1A1200,#2E2000)'
+  },
+  {
+    id:'office-30', num:'30',
+    name:{ar:'مكتب ٣٠', en:'Office 30'},
+    type:{ar:'مكتب خاص', en:'Private Office'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
+    desc:{ar:'مكتب فاخر يجمع بين التصميم العصري والراحة لتحقيق أعلى مستويات الإنتاجية', en:'A luxurious office combining modern design and comfort to achieve the highest productivity levels'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/office-30.jpg',
+    photos:['images/office-30.jpg','images/office-30b.jpg','images/office-30c.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'#',
+    fallback:'linear-gradient(135deg,#180F00,#2A1C00)'
+  },
+  {
+    id:'hall-training', num:'',
+    name:{ar:'قاعة التدريب', en:'Training Hall'},
+    type:{ar:'قاعة متعددة الأغراض', en:'Multi-Purpose Hall'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'حتى ٣٠ شخصاً', en:'Up to 30 People'},
+    desc:{ar:'قاعة تدريب متكاملة مجهزة بأحدث التقنيات لتقديم الدورات والورش الاحترافية', en:'A fully-equipped training hall with the latest technology for delivering professional courses and workshops'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/hall-training.jpg',
+    photos:['images/hall-training.jpg','images/hall-training-b.jpg','images/hall-training-c.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'https://abaadinc.odoo.com/shop/conference-hall-485',
+    fallback:'linear-gradient(135deg,#0E0A00,#1E1500)'
+  },
+  {
+    id:'hall-meeting-s', num:'',
+    name:{ar:'قاعة الاجتماعات الصغيرة', en:'Small Meeting Room'},
+    type:{ar:'قاعة اجتماعات', en:'Meeting Room'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'حتى ٨ أشخاص', en:'Up to 8 People'},
+    desc:{ar:'قاعة اجتماعات أنيقة مثالية للاجتماعات الاحترافية والعروض التقديمية الخاصة', en:'An elegant meeting room ideal for professional meetings and private presentations'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/hall-meeting-s.jpg',
+    photos:['images/hall-meeting-s.jpg','images/hall-meeting-s-b.jpg','images/hall-meeting-s-c.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'https://abaadinc.odoo.com/shop/meeting-room-small-01-483',
+    fallback:'linear-gradient(135deg,#120C00,#201500)'
+  },
+  {
+    id:'hall-meeting-l', num:'',
+    name:{ar:'قاعة الاجتماعات الكبيرة', en:'Large Meeting Room'},
+    type:{ar:'قاعة اجتماعات', en:'Conference Room'},
+    floor:{ar:'الطابق السابع', en:'Floor 7'},
+    capacity:{ar:'حتى ٢٠ شخصاً', en:'Up to 20 People'},
+    desc:{ar:'قاعة مؤتمرات فاخرة مجهزة بالكامل للاجتماعات الكبيرة والعروض التنفيذية المؤثرة', en:'A luxurious conference room fully-equipped for large meetings and impactful executive presentations'},
+    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    photo:'images/hall-meeting-l.jpg',
+    photos:['images/hall-meeting-l.jpg','images/hall-meeting-l-b.jpg'],
+    // ↓ PUT ODOO BOOKING LINK HERE ↓
+    link:'https://abaadinc.odoo.com/shop/meeting-room-big-03-484',
+    fallback:'linear-gradient(135deg,#150E00,#241800)'
+  }
+];
+
+// ── BUILD OFFICES ──
+function buildOffices(){
+  const container = document.getElementById('offices-container');
+  container.innerHTML = OFFICES.map(o => `
+    <section class="office-section" id="${o.id}" data-section="${o.id}">
+      <div class="office-bg" id="bg-${o.id}">
+        <img src="${o.photo}" alt="${o.name.ar}" loading="lazy"
+          onerror="this.parentElement.style.background='${o.fallback}';this.style.display='none'">
+      </div>
+      <div class="office-grad"></div>
+      ${o.num ? `<div class="office-num">${o.num}</div>` : ''}
+      <div class="office-info">
+        <div class="office-text-col">
+          <div class="office-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+            </svg>
+            <span class="ar-only">${o.type.ar}</span>
+            <span class="en-only">${o.type.en}</span>
+          </div>
+          <h2 class="office-name">
+            <span class="ar-only">${o.name.ar}</span>
+            <span class="en-only">${o.name.en}</span>
+          </h2>
+          <div class="office-floor">
+            <span class="ar-only">${o.floor.ar} · ${o.capacity.ar}</span>
+            <span class="en-only">${o.floor.en} · ${o.capacity.en}</span>
+          </div>
+          <p class="office-desc">
+            <span class="ar-only">${o.desc.ar}</span>
+            <span class="en-only">${o.desc.en}</span>
+          </p>
+        </div>
+        <div class="office-action-col">
+          <div class="office-price">
+            <span class="ar-only">${o.price.ar}</span>
+            <span class="en-only">${o.price.en}</span>
+          </div>
+          <a href="${o.link}" class="btn-book" ${o.link==='#'?'onclick="return false"':''}>
+            <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            <span class="ar-only">احجز الآن</span>
+            <span class="en-only">Book Now</span>
+          </a>
+        </div>
+      </div>
+      ${o.photos.length > 1 ? `
+      <div class="office-thumbs">
+        ${o.photos.map((p,i) => `
+          <img src="${p}" class="thumb ${i===0?'active':''}" alt="photo ${i+1}"
+            onclick="switchPhoto('${o.id}','${p}',this)"
+            loading="lazy">
+        `).join('')}
+      </div>` : ''}
+    </section>
+  `).join('');
+}
+
+function switchPhoto(id, src, thumbEl){
+  const bg = document.getElementById('bg-'+id);
+  const img = bg.querySelector('img');
+  if(img){ img.src = src; }
+  bg.closest('.office-section').querySelectorAll('.thumb').forEach(t=>t.classList.remove('active'));
+  thumbEl.classList.add('active');
+}
+
+// ── BUILD SIDEBAR OFFICES LIST ──
+function renderSidebarOffices(){
+  const list = document.getElementById('sb-offices-list');
+  list.innerHTML = OFFICES.map(o => `
+    <a href="#${o.id}" class="sb-link-item" onclick="closeSidebar()" data-target="${o.id}">
+      <span class="sb-num">${o.num || '—'}</span>
+      <span class="ar-only">${o.name.ar}</span>
+      <span class="en-only">${o.name.en}</span>
+    </a>
+  `).join('');
+}
+
+// ── AMENITIES DATA ──
+const AMENITIES = [
+  {
+    icon:`<svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><circle cx="12" cy="20" r="1"/></svg>`,
+    name:{ar:'إنترنت فائق السرعة', en:'High-Speed WiFi'},
+    desc:{ar:'اتصال مستقر وسريع على مدار الساعة', en:'Stable high-speed connection around the clock'}
+  },
+  {
+    icon:`<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>`,
+    name:{ar:'قاعات الاجتماعات', en:'Meeting Rooms'},
+    desc:{ar:'قاعات مجهزة بالكامل للاجتماعات والعروض', en:'Fully-equipped rooms for meetings and presentations'}
+  },
+  {
+    icon:`<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>`,
+    name:{ar:'قاعة التدريب', en:'Training Hall'},
+    desc:{ar:'قاعة متكاملة للدورات والورش التدريبية', en:'Complete hall for courses and training workshops'}
+  },
+  {
+    icon:`<svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`,
+    name:{ar:'خدمات الطباعة', en:'Printing Services'},
+    desc:{ar:'طباعة وتصوير مستندات بكل سهولة', en:'Easy document printing and photocopying'}
+  },
+  {
+    icon:`<svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>`,
+    name:{ar:'قهوة ومشروبات', en:'Coffee & Beverages'},
+    desc:{ar:'مشروبات مجانية لتبقى نشيطاً طوال اليوم', en:'Complimentary drinks to keep you energized'}
+  },
+  {
+    icon:`<svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+    name:{ar:'مواقف السيارات', en:'Free Parking'},
+    desc:{ar:'مواقف مجانية لأعضاء أبعاد', en:'Free parking available for Abaad members'}
+  },
+  {
+    icon:`<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    name:{ar:'برامج وفعاليات', en:'Events & Programs'},
+    desc:{ar:'دورات وفعاليات تدريبية منتظمة', en:'Regular training events and professional programs'}
+  }
+];
+
+function buildAmenities(){
+  const grid = document.getElementById('amenities-grid');
+  grid.innerHTML = AMENITIES.map((a,i) => `
+    <div class="amenity-card reveal delay-${(i%4)+1}">
+      <div class="amenity-icon">${a.icon}</div>
+      <div class="amenity-name ar-only">${a.name.ar}</div>
+      <div class="amenity-name en-only">${a.name.en}</div>
+      <div class="amenity-desc ar-only">${a.desc.ar}</div>
+      <div class="amenity-desc en-only">${a.desc.en}</div>
+    </div>
+  `).join('');
+}
+
+// ── TESTIMONIALS ──
+const TESTIMONIALS = [
+  {
+    text:{ar:'أبعاد غيّرت تجربة عملي بالكامل. البيئة احترافية، الأجواء ملهمة، والفريق رائع. لا أتخيل العمل من مكان آخر.',
+          en:'Abaad completely transformed my work experience. Professional environment, inspiring atmosphere, and an amazing team. I cannot imagine working anywhere else.'},
+    name:{ar:'سارة الغامدي', en:'Sara Al-Ghamdi'},
+    role:{ar:'مديرة تنفيذية', en:'Executive Director'},
+    initial:'س'
+  },
+  {
+    text:{ar:'من أفضل القرارات كانت الانضمام لمجتمع أبعاد. القاعات ممتازة، الخدمات متكاملة، والشبكة المهنية التي بنيتها هنا لا تُقدّر.',
+          en:'Joining the Abaad community was one of the best decisions. Excellent halls, integrated services, and the professional network I built here is priceless.'},
+    name:{ar:'فهد العبدالله', en:'Fahad Al-Abdullah'},
+    role:{ar:'رائد أعمال', en:'Entrepreneur'},
+    initial:'ف'
+  },
+  {
+    text:{ar:'أبعاد يوفر كل ما يحتاجه رائد الأعمال في مكان واحد. الإنترنت السريع وقاعات الاجتماعات المجهزة جعلت أعمالي أكثر احترافية.',
+          en:'Abaad provides everything an entrepreneur needs in one place. High-speed internet and equipped meeting rooms made my business more professional.'},
+    name:{ar:'نورة السديري', en:'Noura Al-Sudairi'},
+    role:{ar:'استشارية أعمال', en:'Business Consultant'},
+    initial:'ن'
+  }
+];
+
+function renderTestimonials(){
+  const grid = document.getElementById('testi-grid');
+  grid.innerHTML = TESTIMONIALS.map((t,i) => `
+    <div class="testi-card reveal delay-${i+1}">
+      <span class="testi-quote">"</span>
+      <p class="testi-text ar-only">${t.text.ar}</p>
+      <p class="testi-text en-only">${t.text.en}</p>
+      <div class="testi-author">
+        <div class="testi-avatar">${t.initial}</div>
+        <div>
+          <div class="testi-name ar-only">${t.name.ar}</div>
+          <div class="testi-name en-only">${t.name.en}</div>
+          <div class="testi-role ar-only">${t.role.ar}</div>
+          <div class="testi-role en-only">${t.role.en}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── DOT NAV ──
+const SECTIONS = ['hero','stats','amenities',...OFFICES.map(o=>o.id),'partner-offers','abaad-programs','testimonials','footer'];
+const SECTION_LABELS = {
+  'hero':{ar:'الرئيسية',en:'Home'},
+  'stats':{ar:'إحصائيات',en:'Stats'},
+  'amenities':{ar:'المميزات',en:'Amenities'},
+  'partner-offers':{ar:'عروض الشركاء',en:'Offers'},
+  'abaad-programs':{ar:'برامجنا',en:'Programs'},
+  'testimonials':{ar:'الآراء',en:'Reviews'},
+  'footer':{ar:'تواصل',en:'Contact'}
+};
+OFFICES.forEach(o => {
+  SECTION_LABELS[o.id] = o.name;
+});
+
+function buildDotNav(){
+  const nav = document.getElementById('dot-nav');
+  nav.innerHTML = SECTIONS.map(id => `
+    <div class="dot" data-target="${id}" title="${SECTION_LABELS[id]?.ar||id}"
+      onclick="scrollToSection('${id}')"></div>
+  `).join('');
+}
+
+function scrollToSection(id){
+  const el = document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth'});
+}
+
+function updateActiveDot(id){
+  document.querySelectorAll('.dot').forEach(d=>{
+    d.classList.toggle('active', d.dataset.target === id);
+  });
+  document.querySelectorAll('.sb-link-item[data-target]').forEach(l=>{
+    l.classList.toggle('active', l.dataset.target === id);
+  });
+}
+
+// ── INTERSECTION OBSERVER ──
+const revealObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      revealObs.unobserve(e.target);
+    }
+  });
+},{threshold:.12});
+
+// Auto-advance interval store: officeId → intervalId
+const thumbIntervals = {};
+
+function startThumbAuto(section){
+  const id = section.id;
+  if(thumbIntervals[id]) return; // already running
+  const thumbs = section.querySelectorAll('.thumb');
+  if(thumbs.length <= 1) return;
+  thumbIntervals[id] = setInterval(()=>{
+    const active = section.querySelector('.thumb.active') || thumbs[0];
+    const idx = [...thumbs].indexOf(active);
+    const next = thumbs[(idx + 1) % thumbs.length];
+    next.click(); // triggers existing switchPhoto logic
+  }, 4000);
+}
+function stopThumbAuto(id){
+  if(thumbIntervals[id]){ clearInterval(thumbIntervals[id]); delete thumbIntervals[id]; }
+}
+
+const sectionObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id = e.target.dataset.section;
+      if(id) updateActiveDot(id);
+      if(e.target.classList.contains('office-section')){
+        e.target.classList.add('in-view');
+        startThumbAuto(e.target);
+      }
+    } else {
+      if(e.target.classList.contains('office-section')) stopThumbAuto(e.target.id);
+    }
+  });
+},{threshold:.4});
+
+function initObservers(){
+  document.querySelectorAll('.reveal,.reveal-left').forEach(el=>revealObs.observe(el));
+  document.querySelectorAll('[data-section]').forEach(el=>sectionObs.observe(el));
+}
+
+// ── PARALLAX ──
+function initParallax(){
+  if(window.innerWidth < 769) return;
+  const sections = document.querySelectorAll('.office-section');
+  window.addEventListener('scroll',()=>{
+    const sy = window.scrollY;
+    sections.forEach(sec=>{
+      const rect = sec.getBoundingClientRect();
+      if(rect.bottom < 0 || rect.top > window.innerHeight) return;
+      const offset = (rect.top / window.innerHeight) * 60;
+      const img = sec.querySelector('.office-bg img');
+      if(img) img.style.transform = `scale(1.08) translateY(${offset * .5}px)`;
+    });
+  },{passive:true});
+}
+
+// ── FIREBASE: LOAD PARTNER OFFERS ──
+function loadPartnerOffers(){
+  db.collection('offers').where('active','==',true).orderBy('createdAt','desc').limit(3).get()
+    .then(snap=>{
+      const grid = document.getElementById('offers-grid');
+      if(snap.empty){
+        grid.innerHTML = `<div class="loading-text ar-only" style="grid-column:1/-1">لا توجد عروض حالياً</div>
+                          <div class="loading-text en-only" style="grid-column:1/-1">No offers available</div>`;
+        return;
+      }
+      grid.innerHTML = snap.docs.map(doc=>{
+        const d = doc.data();
+        const co = currentLang==='ar'?(d.companyNameAr||d.companyName||''):(d.companyName||'');
+        const ot = currentLang==='ar'?(d.offerTextAr||d.offerText||''):(d.offerText||'');
+        return `
+        <div class="offer-card" onclick="location.href='partner-offers.html'" style="cursor:pointer">
+          ${d.imageUrl
+            ? `<img src="${d.imageUrl}" class="offer-img" alt="${co}" loading="lazy">`
+            : `<div class="offer-img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`}
+          <div class="offer-body">
+            ${co ? `<div class="offer-brand">${co}</div>` : ''}
+            <div class="offer-title">${ot.substring(0,65)}${ot.length>65?'...':''}</div>
+            ${d.promoCode?`<div class="offer-desc" style="color:rgba(196,148,42,.7);font-size:.74rem;margin-top:6px"><span class="ar-only">سجّل للحصول على كود الخصم</span><span class="en-only">Register to get discount code</span></div>`:''}
+          </div>
+        </div>`;
+      }).join('');
+    })
+    .catch(()=>{
+      document.getElementById('offers-grid').innerHTML =
+        `<div class="loading-text" style="grid-column:1/-1;color:rgba(245,228,192,.3)">—</div>`;
+    });
+}
+
+// ── FIREBASE: LOAD ABAAD PROGRAMS ──
+function loadAbaadPrograms(){
+  db.collection('abaad_products').limit(3).get()
+    .then(snap=>{
+      const grid = document.getElementById('programs-grid');
+      if(snap.empty){
+        grid.innerHTML = `
+          <div class="program-card reveal">
+            <div class="prog-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+            <div class="prog-tag ar-only">دورة تدريبية</div><div class="prog-tag en-only">Training</div>
+            <div class="prog-name ar-only">IELTS / TOEFL تحضيري</div><div class="prog-name en-only">IELTS / TOEFL Prep</div>
+            <div class="prog-desc ar-only">برنامج تحضيري مكثف للاختبارات الدولية مع مدربين معتمدين</div>
+            <div class="prog-desc en-only">Intensive preparation program for international exams with certified trainers</div>
+            <div class="prog-footer"><span class="prog-price">—</span><a href="abaad-offers.html" class="prog-cta-link"><span class="ar-only">تفاصيل</span><span class="en-only">Details</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></a></div>
+          </div>
+          <div class="program-card reveal delay-1">
+            <div class="prog-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+            <div class="prog-tag ar-only">ورشة عمل</div><div class="prog-tag en-only">Workshop</div>
+            <div class="prog-name ar-only">ريادة الأعمال</div><div class="prog-name en-only">Entrepreneurship</div>
+            <div class="prog-desc ar-only">ورش عمل تفاعلية لبناء وتطوير مشاريعك الناشئة</div>
+            <div class="prog-desc en-only">Interactive workshops for building and developing your startup</div>
+            <div class="prog-footer"><span class="prog-price">—</span><a href="abaad-offers.html" class="prog-cta-link"><span class="ar-only">تفاصيل</span><span class="en-only">Details</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></a></div>
+          </div>
+          <div class="program-card reveal delay-2">
+            <div class="prog-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+            <div class="prog-tag ar-only">تقنية</div><div class="prog-tag en-only">Technology</div>
+            <div class="prog-name ar-only">مهارات تقنية</div><div class="prog-name en-only">Tech Skills</div>
+            <div class="prog-desc ar-only">دورات في التقنية والذكاء الاصطناعي والبرمجة للمبتدئين والمحترفين</div>
+            <div class="prog-desc en-only">Courses in technology, AI, and coding for beginners and professionals</div>
+            <div class="prog-footer"><span class="prog-price">—</span><a href="abaad-offers.html" class="prog-cta-link"><span class="ar-only">تفاصيل</span><span class="en-only">Details</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></a></div>
+          </div>`;
+        return;
+      }
+      grid.innerHTML = snap.docs.map((doc,i)=>{
+        const d = doc.data();
+        return `<div class="program-card reveal delay-${i}">
+          <div class="prog-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+          <div class="prog-tag ar-only">برنامج أبعاد</div><div class="prog-tag en-only">Abaad Program</div>
+          <div class="prog-name ar-only">${d.nameAr||d.name||'برنامج'}</div>
+          <div class="prog-name en-only">${d.nameEn||d.name||'Program'}</div>
+          <div class="prog-desc ar-only">${(d.descAr||d.desc||'').substring(0,100)}</div>
+          <div class="prog-desc en-only">${(d.descEn||d.desc||'').substring(0,100)}</div>
+          <div class="prog-footer">
+            <span class="prog-price">${d.price?d.price+' SAR':'—'}</span>
+            <a href="abaad-offers.html" class="prog-cta-link">
+              <span class="ar-only">تفاصيل</span><span class="en-only">Details</span>
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          </div>
+        </div>`;
+      }).join('');
+    }).catch(()=>{});
+}
+
+// ── THREE.JS HERO PARTICLES ──
+function initHeroParticles(){
+  const canvas = document.getElementById('hero-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, .1, 1000);
+  camera.position.z = 5;
+
+  // Gold particles
+  const count = 180;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count*3);
+  const sizes = new Float32Array(count);
+  for(let i=0;i<count;i++){
+    pos[i*3]   = (Math.random()-.5)*14;
+    pos[i*3+1] = (Math.random()-.5)*10;
+    pos[i*3+2] = (Math.random()-.5)*6;
+    sizes[i] = Math.random() * 4 + 1.5;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('size', new THREE.BufferAttribute(sizes,1));
+
+  const mat = new THREE.PointsMaterial({
+    color:0x8B6914,
+    size:.07,
+    transparent:true,
+    opacity:.50,
+    sizeAttenuation:true
+  });
+
+  // Also add a few larger glowing orbs
+  const orbGeo = new THREE.BufferGeometry();
+  const orbPos = new Float32Array(30*3);
+  for(let i=0;i<30;i++){
+    orbPos[i*3]   = (Math.random()-.5)*12;
+    orbPos[i*3+1] = (Math.random()-.5)*8;
+    orbPos[i*3+2] = (Math.random()-.5)*4;
+  }
+  orbGeo.setAttribute('position', new THREE.BufferAttribute(orbPos,3));
+  const orbMat = new THREE.PointsMaterial({
+    color:0xC4942A,
+    size:.16,
+    transparent:true,
+    opacity:.40,
+    sizeAttenuation:true
+  });
+
+  const mainPoints = new THREE.Points(geo,mat);
+  heroParticles = mainPoints; // expose for theme switching
+  scene.add(mainPoints);
+  scene.add(new THREE.Points(orbGeo,orbMat));
+
+  function resize(){
+    renderer.setSize(innerWidth, innerHeight);
+    camera.aspect = innerWidth/innerHeight;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize',resize);
+
+  let t = 0;
+  const positions = geo.attributes.position.array;
+  const speeds = Array.from({length:count},()=>Math.random()*.004+.001);
+
+  function animate(){
+    requestAnimationFrame(animate);
+    t += .005;
+    for(let i=0;i<count;i++){
+      positions[i*3+1] += speeds[i];
+      if(positions[i*3+1] > 5) positions[i*3+1] = -5;
+    }
+    geo.attributes.position.needsUpdate = true;
+    scene.rotation.y = Math.sin(t*.3) * .08;
+    scene.rotation.x = Math.cos(t*.2) * .04;
+    renderer.render(scene,camera);
+  }
+  animate();
+}
+
+// ── STAT COUNTER ANIMATION ──
+function animateCounters(){
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting) return;
+      const el = e.target;
+      const target = parseInt(el.dataset.count);
+      if(isNaN(target)) return;
+      let start = 0;
+      const dur = 1800;
+      const startTime = performance.now();
+      function step(now){
+        const progress = Math.min((now-startTime)/dur,1);
+        const ease = 1-Math.pow(1-progress,3);
+        el.textContent = Math.floor(ease*target)+(el.textContent.includes('+')?'+':'');
+        if(progress<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+      obs.unobserve(el);
+    });
+  },{threshold:.8});
+  document.querySelectorAll('.stat-num[data-count]').forEach(el=>obs.observe(el));
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  buildOffices();
+  buildAmenities();
+  renderSidebarOffices();
+  renderTestimonials();
+  buildDotNav();
+  setLang(currentLang);
+  initObservers();
+  initParallax();
+  animateCounters();
+  loadPartnerOffers();
+  loadAbaadPrograms();
+
+  // Reduced motion check
+  if(!window.matchMedia('(prefers-reduced-motion:reduce)').matches){
+    initHeroParticles();
+  }
+
+  // Hero content entrance animation
+  const heroContent = document.querySelector('.hero-content');
+  if(heroContent){
+    heroContent.style.animation = 'fadeUp .9s .3s both';
+  }
+});
+</script>
+</body>
+</html>

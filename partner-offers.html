@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="html-root">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أبعاد | عروض الشركاء</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;0,6..96,700&family=Jost:wght@300;400;500;600&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C4942A; --gold-l:#E8B84B; --gold-d:#8B6914;
+  --bg:#FAFAF5; --bg2:#F4EED8; --bg3:#EDE6CB;
+  --cream:#1A1200; --cream2:rgba(26,18,0,.68); --cream3:rgba(26,18,0,.42);
+  --glass:rgba(255,255,255,.90); --glass-b:rgba(196,148,42,.20);
+  --sb-w:270px; --top-h:64px;
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --sidebar-bg:rgba(255,255,255,.98);
+  --header-bg:rgba(250,250,245,.97);
+  --card-bg:#FFFFFF;
+  --toast-bg:#FFFFFF;
+  --form-focus-bg:#FFF8EE;
+  --promo-box-bg:linear-gradient(135deg,#FFF8EE,#FFF3E0);
+  --img-placeholder-bg:linear-gradient(135deg,#F4EDD8,#EDE3C2);
+}
+[data-theme="dark"]{
+  --bg:#0C0800; --bg2:#100C00; --bg3:#140F00;
+  --cream:#F5E4C0; --cream2:rgba(245,228,192,.72); --cream3:rgba(245,228,192,.42);
+  --glass:rgba(255,235,170,.05); --glass-b:rgba(196,148,42,.18);
+  --sidebar-bg:rgba(10,6,0,.96);
+  --header-bg:rgba(12,8,0,.96);
+  --card-bg:rgba(255,235,170,.04);
+  --toast-bg:rgba(20,15,0,.96);
+  --form-focus-bg:rgba(196,148,42,.06);
+  --promo-box-bg:linear-gradient(135deg,rgba(196,148,42,.07),rgba(196,148,42,.04));
+  --img-placeholder-bg:linear-gradient(135deg,rgba(196,148,42,.06),rgba(196,148,42,.03));
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--cream);font-family:'Jost','Noto Sans Arabic',sans-serif;overflow-x:hidden;line-height:1.65}
+[lang="ar"] .en-only{display:none}
+[lang="en"] .ar-only{display:none}
+[lang="ar"] h1,[lang="ar"] h2,[lang="ar"] h3{font-family:'Noto Sans Arabic',serif;letter-spacing:0}
+[lang="en"] h1,[lang="en"] h2,[lang="en"] h3{font-family:'Bodoni Moda',serif}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--gold-d);border-radius:2px}
+
+/* ═══ SIDEBAR ═══ */
+#sidebar{position:fixed;top:0;bottom:0;left:0;width:var(--sb-w);background:var(--sidebar-bg);border-right:1px solid rgba(196,148,42,.15);z-index:300;display:flex;flex-direction:column;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:4px 0 30px rgba(196,148,42,.08);transition:transform .38s var(--ease-out);overflow:hidden}
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(26,18,0,.5);z-index:299;backdrop-filter:blur(3px)}
+#sidebar-overlay.visible{display:block}
+.sb-logo{padding:26px 20px 18px;border-bottom:1px solid rgba(196,148,42,.12);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.sb-logo img{width:42px;height:42px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(196,148,42,.4))}
+.sb-brand-ar{font-family:'Noto Sans Arabic',sans-serif;font-size:1.2rem;font-weight:700;color:var(--gold);line-height:1.1}
+.sb-brand-en-label{font-family:'Bodoni Moda',serif;font-size:.7rem;letter-spacing:.14em;color:var(--cream3);text-transform:uppercase;margin-top:2px;display:block}
+.sb-lang-toggle{margin:14px 20px;display:flex;background:rgba(196,148,42,.07);border:1px solid rgba(196,148,42,.18);border-radius:40px;overflow:hidden;flex-shrink:0}
+.sb-lang-btn{flex:1;padding:7px 10px;border:none;background:transparent;color:var(--cream3);font-family:'Jost',sans-serif;font-size:.78rem;letter-spacing:.05em;cursor:pointer;transition:all .25s;text-align:center}
+.sb-lang-btn.active{background:var(--gold);color:#FAFAF5;font-weight:600;border-radius:36px}
+.sb-scroll{flex:1;overflow-y:auto;padding:0 0 20px}
+.sb-scroll::-webkit-scrollbar{width:2px}
+.sb-section{margin-bottom:6px}
+.sb-section-title{padding:14px 20px 6px;font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-family:'Jost',sans-serif;display:flex;align-items:center;gap:8px}
+.sb-section-title::after{content:'';flex:1;height:1px;background:rgba(196,148,42,.15)}
+.sb-link-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:var(--cream2);font-size:.85rem;text-decoration:none;cursor:pointer;transition:all .22s;border-left:2px solid transparent;font-family:'Noto Sans Arabic','Jost',sans-serif}
+.sb-link-item:hover,.sb-link-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(196,148,42,.07)}
+.sb-link-item .sb-icon{width:16px;height:16px;opacity:.5;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8}
+.sb-link-item:hover .sb-icon,.sb-link-item.active .sb-icon{opacity:1}
+.sb-cta-group{padding:16px 20px;border-top:1px solid rgba(196,148,42,.12);flex-shrink:0}
+.sb-cta-btn{display:block;width:100%;padding:11px;text-align:center;border:1.5px solid var(--gold);color:var(--gold);border-radius:6px;text-decoration:none;font-family:'Jost',sans-serif;font-size:.82rem;letter-spacing:.07em;cursor:pointer;transition:all .25s;margin-bottom:8px;background:transparent;font-weight:500}
+.sb-cta-btn:hover{background:var(--gold);color:#FAFAF5;font-weight:600}
+.sb-cta-btn.solid{background:var(--gold);color:#FAFAF5;font-weight:600}
+.sb-cta-btn.solid:hover{background:var(--gold-l)}
+
+/* ═══ MOBILE HEADER ═══ */
+#mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:var(--top-h);background:var(--header-bg);border-bottom:1px solid rgba(196,148,42,.15);box-shadow:0 2px 20px rgba(196,148,42,.10);z-index:301;align-items:center;justify-content:space-between;padding:0 18px;backdrop-filter:blur(16px)}
+#hamburger{background:none;border:none;cursor:pointer;padding:8px;display:flex;flex-direction:column;gap:5px}
+#hamburger span{display:block;width:24px;height:1.5px;background:var(--gold);transition:all .3s}
+#hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+#hamburger.open span:nth-child(2){opacity:0}
+#hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mob-logo{display:flex;align-items:center;gap:9px}
+.mob-logo img{width:32px;height:32px;object-fit:contain}
+.mob-logo span{font-family:'Noto Sans Arabic',sans-serif;font-weight:700;color:var(--gold);font-size:1.1rem}
+.mob-lang{background:none;border:1px solid rgba(196,148,42,.18);color:var(--cream3);padding:6px 12px;border-radius:20px;cursor:pointer;font-family:'Jost',sans-serif;font-size:.75rem}
+
+/* ═══ MAIN ═══ */
+#main{margin-left:var(--sb-w);min-height:100vh}
+
+/* ═══ HERO ═══ */
+#hero{padding:80px 56px 60px;background:linear-gradient(135deg,rgba(196,148,42,.06) 0%,transparent 55%);border-bottom:1px solid rgba(196,148,42,.12);position:relative;overflow:hidden}
+#hero::before{content:'';position:absolute;top:0;right:0;width:300px;height:300px;background:radial-gradient(circle,rgba(196,148,42,.06) 0%,transparent 70%);border-radius:50%}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:50px;background:rgba(196,148,42,.09);border:1px solid rgba(196,148,42,.22);font-size:.72rem;color:var(--gold);margin-bottom:22px;font-family:'Jost',sans-serif;letter-spacing:.08em}
+.pulse-dot{width:7px;height:7px;background:var(--gold);border-radius:50%;display:inline-block;position:relative;flex-shrink:0}
+.pulse-dot::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--gold);animation:pulse-ring 1.8s ease infinite}
+@keyframes pulse-ring{0%{transform:scale(1);opacity:.9}100%{transform:scale(2.5);opacity:0}}
+.hero-title{font-size:clamp(2rem,4vw,3.6rem);font-weight:700;margin-bottom:14px;line-height:1.1}
+.hero-title .accent{background:linear-gradient(135deg,var(--gold-d),var(--gold-l),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:clamp(.85rem,1.5vw,1rem);color:var(--cream3);max-width:500px;line-height:1.75}
+
+/* ═══ OFFERS SECTION ═══ */
+#offers-section{padding:56px 48px 80px}
+.sec-header{text-align:center;margin-bottom:48px}
+.sec-divider{width:48px;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto 16px}
+.sec-title{font-size:clamp(1.5rem,3vw,2.4rem);font-weight:700;color:var(--cream);margin-bottom:10px}
+.sec-sub{font-size:.88rem;color:var(--cream3);max-width:420px;margin:0 auto}
+
+/* ═══ OFFER CARDS ═══ */
+#offers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;max-width:1100px;margin:0 auto}
+.offer-card{background:var(--card-bg);border:1px solid rgba(196,148,42,.16);border-radius:16px;overflow:hidden;box-shadow:0 2px 18px rgba(196,148,42,.08);transition:all .3s var(--ease-out);animation:fadeUp .6s both}
+.offer-card:hover{border-color:rgba(196,148,42,.42);transform:translateY(-5px);box-shadow:0 20px 50px rgba(196,148,42,.18)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.card-img-wrap{overflow:hidden;max-height:200px}
+.card-img-wrap img{width:100%;height:200px;object-fit:cover;display:block;transition:transform .4s var(--ease-out)}
+.offer-card:hover .card-img-wrap img{transform:scale(1.04)}
+.card-img-placeholder{width:100%;height:160px;background:var(--img-placeholder-bg);display:flex;align-items:center;justify-content:center}
+.card-img-placeholder svg{width:40px;height:40px;stroke:var(--gold-d);fill:none;stroke-width:1.5}
+.card-body{padding:20px 22px}
+.card-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:rgba(196,148,42,.10);border:1px solid rgba(196,148,42,.22);font-size:.68rem;font-weight:700;letter-spacing:.06em;color:var(--gold);font-family:'Jost',sans-serif;margin-bottom:10px}
+.card-title{font-size:1rem;font-weight:600;color:var(--cream);margin-bottom:7px;line-height:1.35}
+.card-desc{font-size:.82rem;line-height:1.68;color:var(--cream2);margin-bottom:16px}
+.card-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.card-discount{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:rgba(196,148,42,.10);border:1px solid rgba(196,148,42,.22);font-size:.75rem;font-weight:700;color:var(--gold-d);font-family:'Jost',sans-serif}
+.btn-claim{padding:9px 22px;background:var(--gold);color:#FAFAF5;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-family:'Jost','Noto Sans Arabic',sans-serif;font-size:.84rem;letter-spacing:.04em;transition:all .25s;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+.btn-claim:hover{background:var(--gold-l);transform:translateY(-2px);box-shadow:0 6px 20px rgba(196,148,42,.35)}
+
+/* ═══ MODALS ═══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,18,0,.55);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--card-bg);border:1px solid rgba(196,148,42,.20);border-radius:20px;padding:32px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;transform:translateY(24px);transition:transform .38s cubic-bezier(.34,1.56,.64,1);box-shadow:0 30px 80px rgba(26,18,0,.15)}
+.modal-overlay.open .modal-box{transform:translateY(0)}
+.modal-title{font-size:1.15rem;font-weight:700;color:var(--cream);margin-bottom:6px}
+.modal-sub{font-size:.82rem;color:var(--cream3);margin-bottom:22px;line-height:1.65}
+.modal-close{background:rgba(26,18,0,.06);border:none;color:var(--cream3);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{background:rgba(26,18,0,.12);color:var(--cream)}
+.form-label{display:block;font-size:.75rem;font-weight:600;color:var(--cream2);margin-bottom:7px;letter-spacing:.04em}
+.form-input{background:var(--bg);border:1.5px solid rgba(196,148,42,.20);color:var(--cream);border-radius:8px;padding:13px 16px;width:100%;font-size:.9rem;font-family:inherit;transition:all .22s;margin-bottom:16px}
+.form-input:focus{outline:none;border-color:var(--gold);background:var(--form-focus-bg);box-shadow:0 0 0 3px rgba(196,148,42,.10)}
+.form-input::placeholder{color:var(--cream3)}
+.btn-submit{width:100%;padding:13px;background:var(--gold);color:#FAFAF5;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-family:'Jost','Noto Sans Arabic',sans-serif;font-size:.9rem;letter-spacing:.04em;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-submit:hover{background:var(--gold-l);transform:translateY(-2px);box-shadow:0 8px 24px rgba(196,148,42,.30)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.promo-box{background:var(--promo-box-bg);border:2px dashed rgba(196,148,42,.35);border-radius:12px;padding:20px;text-align:center;margin-bottom:16px}
+.promo-label{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-d);font-family:'Jost',sans-serif;margin-bottom:8px}
+.promo-code{font-family:'Bodoni Moda','Noto Sans Arabic',serif;font-size:2rem;font-weight:700;color:var(--gold);letter-spacing:.1em;margin-bottom:10px}
+.btn-copy{background:var(--gold);color:#FAFAF5;border:none;border-radius:6px;padding:8px 20px;cursor:pointer;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:600;transition:all .2s}
+.btn-copy:hover{background:var(--gold-l)}
+.promo-note{font-size:.76rem;color:var(--cream3);line-height:1.6;margin-top:10px}
+.btn-secondary{background:rgba(26,18,0,.05);border:1px solid rgba(26,18,0,.10);color:var(--cream3);border-radius:8px;padding:11px 20px;cursor:pointer;font-family:inherit;font-size:.85rem;width:100%;transition:all .2s;margin-top:10px}
+.btn-secondary:hover{background:rgba(26,18,0,.10)}
+
+/* ═══ SKELETON ═══ */
+.skel{background:linear-gradient(90deg,rgba(196,148,42,.05) 0%,rgba(196,148,42,.12) 50%,rgba(196,148,42,.05) 100%);background-size:200% 100%;animation:skel-shine 1.6s infinite;border-radius:8px}
+@keyframes skel-shine{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+/* ═══ EMPTY ═══ */
+#no-offers{display:none;text-align:center;padding:80px 20px}
+.empty-icon{width:64px;height:64px;border-radius:50%;background:rgba(196,148,42,.08);border:1px solid rgba(196,148,42,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.empty-icon svg{width:28px;height:28px;stroke:var(--gold-d);fill:none;stroke-width:1.5}
+.empty-text{font-size:.9rem;color:var(--cream3)}
+
+/* ═══ TOAST ═══ */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--toast-bg);border:1px solid rgba(196,148,42,.30);color:var(--gold-d);padding:12px 22px;border-radius:40px;font-size:.85rem;font-weight:600;z-index:999;transition:transform .45s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;font-family:'Jost',sans-serif;box-shadow:0 8px 30px rgba(196,148,42,.20)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ═══ FOOTER ═══ */
+footer{padding:32px 56px;text-align:center;border-top:1px solid rgba(196,148,42,.12);margin-top:auto;background:var(--bg2)}
+.footer-text{font-size:.78rem;color:var(--cream3);font-family:'Jost',sans-serif}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:768px){
+  #sidebar{transform:translateX(-100%)}
+  #sidebar.open{transform:translateX(0)}
+  #sidebar-overlay.visible{display:block}
+  #mobile-header{display:flex}
+  #main{margin-left:0;padding-top:var(--top-h)}
+  #hero{padding:48px 20px 40px}
+  #offers-section{padding:40px 16px 60px}
+  #offers-grid{grid-template-columns:1fr}
+  footer{padding:24px 20px}
+}
+/* ═══ THEME TOGGLE ═══ */
+.sb-theme-row{padding:0 20px 14px;flex-shrink:0}
+.sb-theme-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px 14px;background:rgba(196,148,42,.07);border:1px solid var(--glass-b);border-radius:8px;cursor:pointer;font-family:'Jost',sans-serif;font-size:.78rem;color:var(--cream2);transition:all .25s}
+.sb-theme-btn:hover{background:rgba(196,148,42,.14)}
+.theme-icon-wrap{width:28px;height:16px;border-radius:8px;background:rgba(196,148,42,.20);border:1px solid var(--glass-b);position:relative;transition:background .3s}
+.theme-icon-wrap::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--gold);transition:transform .3s}
+[data-theme="dark"] .theme-icon-wrap{background:rgba(196,148,42,.35)}
+[data-theme="dark"] .theme-icon-wrap::after{transform:translateX(12px)}
+.mob-theme-btn{background:none;border:1px solid var(--glass-b);color:var(--cream2);width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;flex-shrink:0}
+.mob-theme-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.mob-theme-btn .sun-icon{display:none}
+.mob-theme-btn .moon-icon{display:block}
+[data-theme="dark"] .mob-theme-btn .sun-icon{display:block}
+[data-theme="dark"] .mob-theme-btn .moon-icon{display:none}
+[data-theme="dark"] .sb-lang-btn.active{color:#0C0800}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside id="sidebar">
+  <div class="sb-logo">
+    <img src="images/logo.png" alt="أبعاد">
+    <div>
+      <div class="sb-brand-ar ar-only">أبعاد</div>
+      <div class="sb-brand-ar en-only" style="font-family:'Bodoni Moda',serif">Abaad</div>
+      <span class="sb-brand-en-label ar-only">COWORKING SPACE</span>
+      <span class="sb-brand-en-label en-only">مساحة العمل</span>
+    </div>
+  </div>
+  <div class="sb-lang-toggle">
+    <button class="sb-lang-btn active" id="lang-ar-btn" onclick="setLang('ar')">العربية</button>
+    <button class="sb-lang-btn" id="lang-en-btn" onclick="setLang('en')">EN</button>
+  </div>
+  <div class="sb-theme-row">
+    <button class="sb-theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span>
+        <span class="ar-only" id="theme-label-ar">الوضع الليلي</span>
+        <span class="en-only" id="theme-label-en">Dark Mode</span>
+      </span>
+      <div class="theme-icon-wrap"></div>
+    </button>
+  </div>
+  <div class="sb-scroll">
+    <div class="sb-section">
+      <div class="sb-section-title ar-only">التنقل</div>
+      <div class="sb-section-title en-only">Navigate</div>
+      <a href="index.html" class="sb-link-item">
+        <svg class="sb-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="ar-only">الرئيسية</span><span class="en-only">Home</span>
+      </a>
+      <a href="index.html#office-4" class="sb-link-item">
+        <svg class="sb-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        <span class="ar-only">المساحات</span><span class="en-only">Spaces</span>
+      </a>
+      <a href="abaad-offers.html" class="sb-link-item">
+        <svg class="sb-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        <span class="ar-only">برامج أبعاد</span><span class="en-only">Abaad Programs</span>
+      </a>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-title ar-only">عروض الشركاء</div>
+      <div class="sb-section-title en-only">Partner Offers</div>
+      <a href="partner-offers.html" class="sb-link-item active">
+        <svg class="sb-icon" viewBox="0 0 24 24"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
+        <span class="ar-only">كل العروض</span><span class="en-only">All Offers</span>
+      </a>
+    </div>
+  </div>
+  <div class="sb-cta-group">
+    <a href="index.html" class="sb-cta-btn">
+      <span class="ar-only">العودة للرئيسية</span><span class="en-only">Back to Home</span>
+    </a>
+  </div>
+</aside>
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ═══ MOBILE HEADER ═══ -->
+<header id="mobile-header">
+  <button id="hamburger" aria-label="Toggle menu" onclick="toggleSidebar()">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="mob-logo">
+    <img src="images/logo.png" alt="أبعاد">
+    <span class="ar-only">أبعاد</span>
+    <span class="en-only" style="font-family:'Bodoni Moda',serif">Abaad</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="mob-theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      <svg class="sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <button class="mob-lang" onclick="toggleLang()">
+      <span class="ar-only">EN</span><span class="en-only">عر</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <section id="hero">
+    <div style="max-width:680px;position:relative;z-index:1">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        <span class="ar-only">حصراً لأعضاء أبعاد</span>
+        <span class="en-only">Exclusive for Abaad Members</span>
+      </div>
+      <h1 class="hero-title">
+        <span class="accent ar-only">عروض الشركاء</span>
+        <span class="accent en-only">Partner Offers</span>
+        <br>
+        <span style="font-size:.55em;color:var(--cream3);font-weight:400" class="ar-only">خصومات وامتيازات حصرية</span>
+        <span style="font-size:.55em;color:var(--cream3);font-weight:400" class="en-only">Exclusive Discounts & Privileges</span>
+      </h1>
+      <p class="hero-sub ar-only">استمتع بعروض وخصومات مميزة من كبار الشركاء — حصرياً لأعضاء أبعاد</p>
+      <p class="hero-sub en-only">Enjoy exclusive offers and discounts from top partner brands — exclusively for Abaad members</p>
+    </div>
+  </section>
+
+  <section id="offers-section">
+    <div class="sec-header">
+      <div class="sec-divider"></div>
+      <h2 class="sec-title"><span class="ar-only">جميع العروض</span><span class="en-only">All Offers</span></h2>
+      <p class="sec-sub ar-only">اختر العرض واحصل على كود الخصم مباشرةً</p>
+      <p class="sec-sub en-only">Pick an offer and get your discount code instantly</p>
+    </div>
+    <div id="offers-grid">
+      <div class="offer-card" id="sk1">
+        <div class="skel" style="height:180px;border-radius:16px 16px 0 0"></div>
+        <div class="card-body">
+          <div class="skel" style="height:18px;width:45%;margin-bottom:10px"></div>
+          <div class="skel" style="height:14px;margin-bottom:6px"></div>
+          <div class="skel" style="height:14px;width:70%;margin-bottom:16px"></div>
+          <div class="skel" style="height:38px"></div>
+        </div>
+      </div>
+    </div>
+    <div id="no-offers">
+      <div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/></svg></div>
+      <p class="empty-text ar-only">لا توجد عروض متاحة حالياً — تابعونا قريباً</p>
+      <p class="empty-text en-only">No offers available right now — stay tuned</p>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-text ar-only">أبعاد للأعمال · مساحة عمل متميزة · الأحساء © 2026</p>
+    <p class="footer-text en-only">Abaad Coworking · Premium Workspace · Al-Ahsa © 2026</p>
+  </footer>
+</main>
+
+<!-- ═══ INFO MODAL ═══ -->
+<div class="modal-overlay" id="info-modal" onclick="if(event.target===this)closeInfoModal()">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+      <div>
+        <h3 class="modal-title ar-only">سجّل للحصول على الكود</h3>
+        <h3 class="modal-title en-only">Register to Get Your Code</h3>
+        <p class="modal-sub ar-only">أدخل بياناتك لإنشاء كود الخصم الحصري</p>
+        <p class="modal-sub en-only">Enter your details to generate your exclusive discount code</p>
+      </div>
+      <button class="modal-close" onclick="closeInfoModal()">✕</button>
+    </div>
+    <form id="info-form" onsubmit="submitInfo(event)">
+      <label class="form-label ar-only">الاسم الكامل</label>
+      <label class="form-label en-only">Full Name</label>
+      <input id="v-name" type="text" class="form-input" required placeholder="اسمك" data-placeholder-ar="اسمك" data-placeholder-en="Your name">
+      <label class="form-label ar-only">رقم الهاتف</label>
+      <label class="form-label en-only">Phone Number</label>
+      <input id="v-phone" type="tel" class="form-input" required placeholder="+966 5X XXX XXXX">
+      <button type="submit" class="btn-submit" id="info-submit-btn">
+        <span class="ar-only">احصل على كود الخصم ←</span>
+        <span class="en-only">Get Discount Code →</span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══ CODE MODAL ═══ -->
+<div class="modal-overlay" id="code-modal" onclick="if(event.target===this)closeCodeModal()">
+  <div class="modal-box" style="text-align:center">
+    <button class="modal-close" onclick="closeCodeModal()" style="margin-left:auto;margin-bottom:16px">✕</button>
+    <div id="modal-offer-title" style="font-size:1rem;font-weight:600;color:var(--cream);margin-bottom:20px"></div>
+    <div class="promo-box">
+      <div class="promo-label ar-only">كود الخصم الخاص بك</div>
+      <div class="promo-label en-only">Your Discount Code</div>
+      <div class="promo-code" id="modal-code">—</div>
+      <button class="btn-copy" onclick="copyCode()">
+        <span class="ar-only">نسخ الكود</span><span class="en-only">Copy Code</span>
+      </button>
+      <p class="promo-note" id="modal-note"></p>
+    </div>
+    <button class="btn-secondary" onclick="closeCodeModal()">
+      <span class="ar-only">إغلاق</span><span class="en-only">Close</span>
+    </button>
+  </div>
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyBMil1i4ba4gIzpV4PGOUDZrPh5vWH3riI",
+  authDomain:"abaad-39b3c.firebaseapp.com",
+  projectId:"abaad-39b3c",
+  storageBucket:"abaad-39b3c.firebasestorage.app",
+  messagingSenderId:"750678331728",
+  appId:"1:750678331728:web:c3f4c7c5c678d87da51c55"
+});
+const db = firebase.firestore();
+
+// ── THEME ──
+let currentTheme = localStorage.getItem('abaad_theme') || 'light';
+function applyTheme(theme){
+  const isDark = theme === 'dark';
+  const html = document.getElementById('html-root');
+  if(isDark) html.setAttribute('data-theme','dark');
+  else html.removeAttribute('data-theme');
+  const lAr = document.getElementById('theme-label-ar');
+  const lEn = document.getElementById('theme-label-en');
+  if(lAr) lAr.textContent = isDark ? 'الوضع الفاتح' : 'الوضع الليلي';
+  if(lEn) lEn.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+  localStorage.setItem('abaad_theme', theme);
+}
+function toggleTheme(){
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+  applyTheme(currentTheme);
+}
+
+let lang = localStorage.getItem('abaad_lang') || 'ar';
+function setLang(l){
+  lang = l;
+  const root = document.getElementById('html-root');
+  root.lang = l; root.dir = l==='ar'?'rtl':'ltr';
+  document.getElementById('lang-ar-btn').classList.toggle('active', l==='ar');
+  document.getElementById('lang-en-btn').classList.toggle('active', l==='en');
+  const ni = document.getElementById('v-name');
+  if(ni) ni.placeholder = l==='ar'?'اسمك':'Your name';
+  localStorage.setItem('abaad_lang', l);
+  renderOffers();
+}
+function toggleLang(){ setLang(lang==='ar'?'en':'ar'); }
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar'),ov=document.getElementById('sidebar-overlay'),hb=document.getElementById('hamburger');
+  const open=sb.classList.toggle('open');
+  ov.classList.toggle('visible',open); hb.classList.toggle('open',open);
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('visible');
+  document.getElementById('hamburger').classList.remove('open');
+}
+
+let cachedOffers=[], pendingOffer=null;
+
+function loadOffers(){
+  db.collection('partner_offers').orderBy('createdAt','desc')
+    .onSnapshot(snap=>{
+      cachedOffers=snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderOffers();
+    }, ()=>{
+      db.collection('partner_offers').get().then(snap=>{
+        cachedOffers=snap.docs.map(d=>({id:d.id,...d.data()}));
+        renderOffers();
+      });
+    });
+}
+
+function renderOffers(){
+  const grid=document.getElementById('offers-grid'),empty=document.getElementById('no-offers');
+  const sk=document.getElementById('sk1'); if(sk) sk.remove();
+  grid.querySelectorAll('.real-card').forEach(e=>e.remove());
+  if(cachedOffers.length===0){empty.style.display='block';return;}
+  empty.style.display='none';
+  cachedOffers.forEach((o,i)=>grid.appendChild(buildCard(o,i)));
+}
+
+function buildCard(o,i){
+  const card=document.createElement('div');
+  card.className='offer-card real-card';
+  card.style.animationDelay=`${i*.08}s`;
+  const title=lang==='ar'?(o.titleAr||o.title||'عرض مميز'):(o.titleEn||o.title||'Special Offer');
+  const desc=lang==='ar'?(o.descAr||o.desc||''):(o.descEn||o.desc||'');
+  const safeId=o.id.replace(/'/g,"\\'");
+  card.innerHTML=`
+    ${o.imageUrl
+      ?`<div class="card-img-wrap"><img src="${o.imageUrl}" alt="${title.replace(/"/g,'&quot;')}" loading="lazy" onerror="this.closest('.card-img-wrap').remove()"></div>`
+      :`<div class="card-img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`}
+    <div class="card-body">
+      <div class="card-badge"><span class="pulse-dot" style="width:5px;height:5px"></span>${o.brand||(lang==='ar'?'شريك أبعاد':'Abaad Partner')}</div>
+      <div class="card-title">${title}</div>
+      <div class="card-desc">${desc.substring(0,120)}${desc.length>120?'...':''}</div>
+      <div class="card-footer">
+        ${o.discount?`<div class="card-discount">${lang==='ar'?'خصم':'Discount'} ${o.discount}</div>`:'<span></span>'}
+        <button class="btn-claim" onclick="claimOffer('${safeId}')">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <span class="ar-only">احصل على الكود</span><span class="en-only">Get Code</span>
+        </button>
+      </div>
+    </div>`;
+  return card;
+}
+
+function claimOffer(id){
+  pendingOffer=cachedOffers.find(o=>o.id===id);
+  if(!pendingOffer) return;
+  const v=sessionStorage.getItem('abaad_visitor');
+  if(v) processOffer(pendingOffer,JSON.parse(v));
+  else{document.getElementById('info-modal').classList.add('open');setTimeout(()=>document.getElementById('v-name').focus(),60);}
+}
+function closeInfoModal(){document.getElementById('info-modal').classList.remove('open');pendingOffer=null;}
+
+async function submitInfo(e){
+  e.preventDefault();
+  const name=document.getElementById('v-name').value.trim(),phone=document.getElementById('v-phone').value.trim();
+  if(!name||!phone) return;
+  const btn=document.getElementById('info-submit-btn');
+  btn.disabled=true; btn.innerHTML=lang==='ar'?'<span>جاري…</span>':'<span>Processing…</span>';
+  const visitor={name,phone};
+  sessionStorage.setItem('abaad_visitor',JSON.stringify(visitor));
+  document.getElementById('info-modal').classList.remove('open');
+  if(pendingOffer) await processOffer(pendingOffer,visitor);
+  btn.disabled=false;
+  btn.innerHTML=`<span class="ar-only">احصل على كود الخصم ←</span><span class="en-only">Get Discount Code →</span>`;
+  setLang(lang);
+}
+
+function generateCode(offerId,phone){
+  const clean=phone.replace(/\D/g,'').slice(-4);
+  const prefix=offerId.substring(0,4).toUpperCase();
+  return `${prefix}-${clean}`;
+}
+async function processOffer(offer,visitor){
+  const code=generateCode(offer.id,visitor.phone);
+  const codeKey='abaad_code_'+offer.id+'_'+visitor.phone.replace(/\D/g,'');
+  if(!localStorage.getItem(codeKey)){
+    try{
+      await db.collection('claimed_codes').add({offerId:offer.id,offerTitle:offer.titleAr||offer.title||'',visitorName:visitor.name,visitorPhone:visitor.phone,code,lang,timestamp:firebase.firestore.FieldValue.serverTimestamp()});
+      localStorage.setItem(codeKey,code);
+    }catch(err){console.warn('Code save failed:',err);}
+  }
+  pendingOffer=null;
+  showCodeModal(offer,code);
+}
+let currentCode='';
+function showCodeModal(offer,code){
+  currentCode=code;
+  const title=lang==='ar'?(offer.titleAr||offer.title||''):(offer.titleEn||offer.title||'');
+  document.getElementById('modal-offer-title').textContent=title;
+  document.getElementById('modal-code').textContent=code;
+  document.getElementById('modal-note').textContent=lang==='ar'
+    ?`استخدم هذا الكود عند الشراء من ${offer.brand||'الشريك'}. ساري لمدة محدودة.`
+    :`Use this code when purchasing from ${offer.brand||'the partner'}. Valid for a limited time.`;
+  document.getElementById('code-modal').classList.add('open');
+}
+function closeCodeModal(){document.getElementById('code-modal').classList.remove('open');currentCode='';}
+function copyCode(){
+  if(!currentCode) return;
+  if(navigator.clipboard){navigator.clipboard.writeText(currentCode).then(()=>toast(lang==='ar'?'✓ تم نسخ الكود':'✓ Code copied!'));}
+  else{const ta=document.createElement('textarea');ta.value=currentCode;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();document.execCommand('copy');document.body.removeChild(ta);toast(lang==='ar'?'✓ تم نسخ الكود':'✓ Code copied!');}
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3200);}
+
+document.addEventListener('DOMContentLoaded',()=>{setLang(lang);applyTheme(currentTheme);loadOffers();});
+</script>
+</body>
+</html>
