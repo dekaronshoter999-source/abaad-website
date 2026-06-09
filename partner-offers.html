@@ -123,6 +123,9 @@ body{background:var(--bg);color:var(--cream);font-family:'Jost','Noto Sans Arabi
 .card-desc{font-size:.82rem;line-height:1.68;color:var(--cream2);margin-bottom:16px}
 .card-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .card-discount{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:rgba(196,148,42,.10);border:1px solid rgba(196,148,42,.22);font-size:.75rem;font-weight:700;color:var(--gold-d);font-family:'Jost',sans-serif}
+.card-location{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;font-weight:600;color:var(--gold);text-decoration:none;margin-bottom:12px;opacity:.85;transition:opacity .2s,transform .2s;font-family:'Jost','Noto Sans Arabic',sans-serif}
+.card-location:hover{opacity:1;transform:translateX(-2px)}
+[lang="en"] .card-location:hover{transform:translateX(2px)}
 .btn-claim{padding:9px 22px;background:var(--gold);color:#FAFAF5;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-family:'Jost','Noto Sans Arabic',sans-serif;font-size:.84rem;letter-spacing:.04em;transition:all .25s;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
 .btn-claim:hover{background:var(--gold-l);transform:translateY(-2px);box-shadow:0 6px 20px rgba(196,148,42,.35)}
 
@@ -469,6 +472,10 @@ function buildCard(o,i){
     <div class="card-body">
       <div class="card-badge"><span class="pulse-dot" style="width:5px;height:5px"></span>${brand||(lang==='ar'?'شريك أبعاد':'Abaad Partner')}</div>
       <div class="card-title">${title}</div>
+      ${o.locationLink?`<a href="${o.locationLink.replace(/"/g,'&quot;')}" target="_blank" rel="noopener" class="card-location">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span class="ar-only">عرض الموقع</span><span class="en-only">Show Location</span>
+      </a>`:''}
       <div class="card-footer">
         ${o.promoCode?`<div class="card-discount">${lang==='ar'?'كود خصم متاح':'Promo Code Available'}</div>`:'<span></span>'}
         <button class="btn-claim" onclick="claimOffer('${safeId}')">
