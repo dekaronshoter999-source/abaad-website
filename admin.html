@@ -563,6 +563,24 @@
         </div>
       </div>
 
+      <!-- Image URL -->
+      <div style="margin-bottom:18px;">
+        <label class="lbl">Offer Image URL <span style="color:var(--text-muted);font-weight:400;">— optional, paste a public image link</span></label>
+        <input type="url" id="f-image" class="inp" placeholder="https://i.imgur.com/... or any public image URL"
+               oninput="previewOfferImage()">
+        <div id="f-image-preview" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden;max-height:180px;border:1px solid rgba(255,255,255,0.08);">
+          <img id="f-image-preview-img" src="" alt="Preview" style="width:100%;object-fit:cover;display:block;"
+               onerror="document.getElementById('f-image-preview').style.display='none'">
+        </div>
+      </div>
+
+      <!-- Location Link -->
+      <div style="margin-bottom:18px;">
+        <label class="lbl">Location Link <span style="color:var(--text-muted);font-weight:400;">— optional, Google Maps or any URL</span></label>
+        <input type="url" id="f-location" class="inp" placeholder="https://maps.google.com/...">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">If provided, a "Show Location" button will appear on the offer card</div>
+      </div>
+
       <!-- Phone -->
       <div style="margin-bottom:18px;">
         <label class="lbl">Contact Phone Number</label>
@@ -901,11 +919,14 @@ function openModal(id) {
     document.getElementById('f-company-ar').value  = o.companyNameAr  || '';
     document.getElementById('f-offer-en').value    = o.offerText      || '';
     document.getElementById('f-offer-ar').value    = o.offerTextAr    || '';
+    document.getElementById('f-image').value       = o.imageUrl       || '';
+    document.getElementById('f-location').value    = o.locationLink   || '';
     document.getElementById('f-phone').value       = o.phone          || '';
     document.getElementById('f-promo').value       = o.promoCode      || '';
     document.getElementById('f-validity').value    = o.validityDays   || 30;
     document.getElementById('f-max-claims').value  = o.maxClaims      || 0;
     document.getElementById('f-active').checked   = !!o.active;
+    previewOfferImage();
     updatePromoPreview();
 
     if (o.expiryDate) {
@@ -923,6 +944,7 @@ function openModal(id) {
     document.getElementById('f-expiry-preset').value = '1m';
     document.getElementById('f-expiry-custom').style.display = 'none';
     document.getElementById('promo-preview').style.display = 'none';
+    document.getElementById('f-image-preview').style.display = 'none';
   }
 
   document.getElementById('modal-overlay').style.display = 'flex';
@@ -961,6 +983,8 @@ async function saveOffer(e) {
     companyNameAr: document.getElementById('f-company-ar').value.trim(),
     offerText:     document.getElementById('f-offer-en').value.trim(),
     offerTextAr:   document.getElementById('f-offer-ar').value.trim(),
+    imageUrl:      document.getElementById('f-image').value.trim(),
+    locationLink:  document.getElementById('f-location').value.trim(),
     phone:         document.getElementById('f-phone').value.trim(),
     promoCode:     document.getElementById('f-promo').value.trim().toUpperCase(),
     validityDays:  parseInt(document.getElementById('f-validity').value)   || 30,
@@ -1333,6 +1357,18 @@ function editAbaadProduct(id) { openAbaadModal(id); }
 function closeAbaadModal() {
   document.getElementById('abaad-modal-overlay').style.display = 'none';
   editingAbaadId = null;
+}
+
+function previewOfferImage() {
+  const url     = document.getElementById('f-image').value.trim();
+  const preview = document.getElementById('f-image-preview');
+  const img     = document.getElementById('f-image-preview-img');
+  if (url) {
+    img.src = url;
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
 }
 
 function previewAbaadImage() {
