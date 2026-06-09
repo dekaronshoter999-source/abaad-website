@@ -434,13 +434,13 @@ function closeSidebar(){
 let cachedOffers=[], pendingOffer=null;
 
 function loadOffers(){
-  db.collection('partner_offers').orderBy('createdAt','desc')
+  db.collection('offers').orderBy('createdAt','desc')
     .onSnapshot(snap=>{
-      cachedOffers=snap.docs.map(d=>({id:d.id,...d.data()}));
+      cachedOffers=snap.docs.map(d=>({id:d.id,...d.data()})).filter(o=>o.active!==false);
       renderOffers();
     }, ()=>{
-      db.collection('partner_offers').get().then(snap=>{
-        cachedOffers=snap.docs.map(d=>({id:d.id,...d.data()}));
+      db.collection('offers').get().then(snap=>{
+        cachedOffers=snap.docs.map(d=>({id:d.id,...d.data()})).filter(o=>o.active!==false);
         renderOffers();
       });
     });
@@ -459,19 +459,18 @@ function buildCard(o,i){
   const card=document.createElement('div');
   card.className='offer-card real-card';
   card.style.animationDelay=`${i*.08}s`;
-  const title=lang==='ar'?(o.titleAr||o.title||'عرض مميز'):(o.titleEn||o.title||'Special Offer');
-  const desc=lang==='ar'?(o.descAr||o.desc||''):(o.descEn||o.desc||'');
+  const title=lang==='ar'?(o.offerTextAr||o.offerText||'عرض مميز'):(o.offerText||o.offerTextAr||'Special Offer');
+  const brand=lang==='ar'?(o.companyNameAr||o.companyName||''):(o.companyName||o.companyNameAr||'');
   const safeId=o.id.replace(/'/g,"\\'");
   card.innerHTML=`
     ${o.imageUrl
       ?`<div class="card-img-wrap"><img src="${o.imageUrl}" alt="${title.replace(/"/g,'&quot;')}" loading="lazy" onerror="this.closest('.card-img-wrap').remove()"></div>`
       :`<div class="card-img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`}
     <div class="card-body">
-      <div class="card-badge"><span class="pulse-dot" style="width:5px;height:5px"></span>${o.brand||(lang==='ar'?'شريك أبعاد':'Abaad Partner')}</div>
+      <div class="card-badge"><span class="pulse-dot" style="width:5px;height:5px"></span>${brand||(lang==='ar'?'شريك أبعاد':'Abaad Partner')}</div>
       <div class="card-title">${title}</div>
-      <div class="card-desc">${desc.substring(0,120)}${desc.length>120?'...':''}</div>
       <div class="card-footer">
-        ${o.discount?`<div class="card-discount">${lang==='ar'?'خصم':'Discount'} ${o.discount}</div>`:'<span></span>'}
+        ${o.promoCode?`<div class="card-discount">${lang==='ar'?'كود خصم متاح':'Promo Code Available'}</div>`:'<span></span>'}
         <button class="btn-claim" onclick="claimOffer('${safeId}')">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
           <span class="ar-only">احصل على الكود</span><span class="en-only">Get Code</span>
@@ -515,7 +514,7 @@ async function processOffer(offer,visitor){
   const codeKey='abaad_code_'+offer.id+'_'+visitor.phone.replace(/\D/g,'');
   if(!localStorage.getItem(codeKey)){
     try{
-      await db.collection('claimed_codes').add({offerId:offer.id,offerTitle:offer.titleAr||offer.title||'',visitorName:visitor.name,visitorPhone:visitor.phone,code,lang,timestamp:firebase.firestore.FieldValue.serverTimestamp()});
+      await db.collection('claimed_codes').add({offerId:offer.id,offerTitle:offer.offerTextAr||offer.offerText||'',visitorName:visitor.name,visitorPhone:visitor.phone,code,lang,timestamp:firebase.firestore.FieldValue.serverTimestamp()});
       localStorage.setItem(codeKey,code);
     }catch(err){console.warn('Code save failed:',err);}
   }
@@ -525,12 +524,13 @@ async function processOffer(offer,visitor){
 let currentCode='';
 function showCodeModal(offer,code){
   currentCode=code;
-  const title=lang==='ar'?(offer.titleAr||offer.title||''):(offer.titleEn||offer.title||'');
+  const title=lang==='ar'?(offer.offerTextAr||offer.offerText||''):(offer.offerText||offer.offerTextAr||'');
+  const brand=lang==='ar'?(offer.companyNameAr||offer.companyName||'الشريك'):(offer.companyName||offer.companyNameAr||'the partner');
   document.getElementById('modal-offer-title').textContent=title;
   document.getElementById('modal-code').textContent=code;
   document.getElementById('modal-note').textContent=lang==='ar'
-    ?`استخدم هذا الكود عند الشراء من ${offer.brand||'الشريك'}. ساري لمدة محدودة.`
-    :`Use this code when purchasing from ${offer.brand||'the partner'}. Valid for a limited time.`;
+    ?`استخدم هذا الكود عند الشراء من ${brand}. ساري لمدة محدودة.`
+    :`Use this code when purchasing from ${brand}. Valid for a limited time.`;
   document.getElementById('code-modal').classList.add('open');
 }
 function closeCodeModal(){document.getElementById('code-modal').classList.remove('open');currentCode='';}
