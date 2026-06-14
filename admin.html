@@ -281,6 +281,11 @@
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="8.5" x2="22" y2="8.5"/></svg>
       Abaad Offers
     </button>
+    <button class="nav-item" id="nav-inquiries" onclick="showTab('inquiries')" style="position:relative;">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Office Inquiries
+      <span id="inq-badge" style="display:none;position:absolute;top:8px;inset-inline-end:14px;background:#E8B84B;color:#0C0800;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;"></span>
+    </button>
   </nav>
 
   <div style="padding:16px 24px;border-top:1px solid var(--navy-border);">
@@ -519,6 +524,53 @@
           </thead>
           <tbody id="abaad-tbody">
             <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── OFFICE INQUIRIES TAB ─── -->
+  <div id="tab-inquiries" class="page-content" style="display:none;">
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;">
+      <div class="stat-card">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Total Inquiries</div>
+        <div class="stat-value gold-text" id="stat-inq-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">This Week</div>
+        <div class="stat-value" style="color:var(--green);" id="stat-inq-week">—</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Most Requested</div>
+        <div class="stat-value" style="font-size:14px;font-weight:600;color:var(--gold);" id="stat-inq-top">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Interested Visitors</span>
+        <button class="btn btn-ghost" onclick="exportInquiriesCSV()" style="display:flex;align-items:center;gap:6px;font-size:13px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Office Interested In</th>
+              <th>Message</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="inq-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -793,6 +845,7 @@ function doLogin() {
     loadLeads();
     loadClaims();
     loadAbaadProducts();
+    loadInquiries();
   } else {
     document.getElementById('login-err').style.display = 'block';
     document.getElementById('pw-input').focus();
@@ -817,19 +870,21 @@ if (sessionStorage.getItem('abaad_admin') === '1') {
 
 // ─────────── TABS ───────────
 function showTab(tab) {
-  ['offers','leads','claims','abaad'].forEach(t => {
+  ['offers','leads','claims','abaad','inquiries'].forEach(t => {
     document.getElementById('tab-'+t).style.display = t === tab ? 'block' : 'none';
     document.getElementById('nav-'+t).classList.toggle('active', t === tab);
   });
   const titles = {
     offers: ['Partner Offers',   'Manage partner deals shown on the landing page'],
     leads:  ['Visitor Leads',    'People who submitted their details on the landing page'],
-    claims: ['Claimed Codes',    'All codes claimed by visitors — mark as used when redeemed'],
-    abaad:  ['Abaad Offers',     'Manage exclusive Abaad programs with image, price and signup link'],
+    claims:     ['Claimed Codes',     'All codes claimed by visitors — mark as used when redeemed'],
+    abaad:      ['Abaad Offers',      'Manage exclusive Abaad programs with image, price and signup link'],
+    inquiries:  ['Office Inquiries',  'Visitors who expressed interest in your offices — contact them with tailored offers'],
   };
   document.getElementById('page-title').textContent = titles[tab][0];
   document.getElementById('page-sub').textContent   = titles[tab][1];
   if (tab === 'abaad') updateAbaadStats();
+  if (tab === 'inquiries') updateInquiryStats();
 }
 
 // ─────────── OFFERS ───────────
@@ -1357,6 +1412,101 @@ function editAbaadProduct(id) { openAbaadModal(id); }
 function closeAbaadModal() {
   document.getElementById('abaad-modal-overlay').style.display = 'none';
   editingAbaadId = null;
+}
+
+// ─────────── OFFICE INQUIRIES ───────────
+let allInquiries = [];
+
+function loadInquiries() {
+  db.collection('office_inquiries').orderBy('submittedAt', 'desc')
+    .onSnapshot(snap => {
+      allInquiries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderInquiriesTable();
+      updateInquiryStats();
+      // Show badge on nav if there are inquiries
+      const badge = document.getElementById('inq-badge');
+      if (badge && allInquiries.length > 0) {
+        badge.textContent = allInquiries.length;
+        badge.style.display = 'inline';
+      }
+    }, err => {
+      db.collection('office_inquiries').orderBy('submittedAt', 'desc').get().then(snap => {
+        allInquiries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderInquiriesTable();
+        updateInquiryStats();
+      });
+    });
+}
+
+function updateInquiryStats() {
+  const total = allInquiries.length;
+  const weekAgo = Date.now() - 7 * 864e5;
+  const thisWeek = allInquiries.filter(i => {
+    const ts = i.submittedAt ? (i.submittedAt.toMillis ? i.submittedAt.toMillis() : i.submittedAt) : 0;
+    return ts > weekAgo;
+  }).length;
+  // Most requested office
+  const counts = {};
+  allInquiries.forEach(i => { if (i.officeName) counts[i.officeName] = (counts[i.officeName] || 0) + 1; });
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+
+  const el = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+  el('stat-inq-total', total);
+  el('stat-inq-week', thisWeek);
+  el('stat-inq-top', top ? `${top[0]} (${top[1]})` : '—');
+}
+
+function renderInquiriesTable() {
+  const tbody = document.getElementById('inq-tbody');
+  if (!tbody) return;
+  if (allInquiries.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">No inquiries yet — they'll appear here when visitors submit the form</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = allInquiries.map(inq => {
+    const ts = inq.submittedAt ? (inq.submittedAt.toMillis ? inq.submittedAt.toMillis() : inq.submittedAt) : 0;
+    const dateStr = ts ? new Date(ts).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+    const msg = inq.message ? `<span title="${inq.message.replace(/"/g,'&quot;')}" style="cursor:help;border-bottom:1px dashed rgba(255,255,255,0.2);">${inq.message.substring(0,40)}${inq.message.length>40?'…':''}</span>` : '<span style="color:var(--text-muted);">—</span>';
+    const phone = inq.phone ? `<a href="tel:${inq.phone}" style="color:var(--gold);text-decoration:none;">${inq.phone}</a>` : '—';
+    const email = inq.email ? `<a href="mailto:${inq.email}" style="color:var(--gold);text-decoration:none;font-size:12px;">${inq.email}</a>` : '<span style="color:var(--text-muted);">—</span>';
+    const office = inq.officeName || inq.officeId || '<span style="color:var(--text-muted);">—</span>';
+    return `<tr>
+      <td style="font-weight:600;">${inq.name || '—'}</td>
+      <td>${phone}</td>
+      <td>${email}</td>
+      <td><span style="background:rgba(196,148,42,.10);border:1px solid rgba(196,148,42,.22);padding:3px 10px;border-radius:12px;font-size:12px;color:var(--gold);">${office}</span></td>
+      <td>${msg}</td>
+      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">${dateStr}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="deleteInquiry('${inq.id}')" style="color:var(--red);border-color:rgba(255,80,80,.2);" title="Delete">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function deleteInquiry(id) {
+  if (!confirm('Delete this inquiry? This cannot be undone.')) return;
+  try {
+    await db.collection('office_inquiries').doc(id).delete();
+    toast('Inquiry deleted.', 'success');
+  } catch(err) { toast('Error: ' + err.message, 'error'); }
+}
+
+function exportInquiriesCSV() {
+  if (!allInquiries.length) { toast('No inquiries to export.', 'error'); return; }
+  const rows = [['Name','Phone','Email','Office','Message','Date']];
+  allInquiries.forEach(i => {
+    const ts = i.submittedAt ? (i.submittedAt.toMillis ? i.submittedAt.toMillis() : i.submittedAt) : 0;
+    const d = ts ? new Date(ts).toLocaleString('en-GB') : '';
+    rows.push([i.name||'', i.phone||'', i.email||'', i.officeName||i.officeId||'', (i.message||'').replace(/,/g,';'), d]);
+  });
+  const csv = rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
+  a.download = `abaad-inquiries-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
 }
 
 function previewOfferImage() {

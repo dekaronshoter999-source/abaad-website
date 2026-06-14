@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════════
    ABAAD — Design System v3
@@ -577,6 +578,65 @@ body{background:var(--bg);color:var(--cream);overflow-x:hidden;
 [data-theme="dark"] .mob-theme-btn .moon-icon{display:none}
 /* sb-lang-btn active contrast fix for dark mode */
 [data-theme="dark"] .sb-lang-btn.active{color:#0C0800}
+
+/* ═══ INTEREST FORM MODAL ═══ */
+.int-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  z-index:1000;display:flex;align-items:center;justify-content:center;
+  padding:20px;opacity:0;pointer-events:none;transition:opacity .3s}
+.int-overlay.open{opacity:1;pointer-events:all}
+.int-box{
+  background:var(--card-bg);border:1px solid var(--glass-b);
+  border-radius:16px;padding:36px 40px;width:100%;max-width:520px;
+  max-height:90vh;overflow-y:auto;
+  transform:translateY(28px);transition:transform .35s var(--ease-out);
+  position:relative}
+.int-overlay.open .int-box{transform:translateY(0)}
+.int-close{
+  position:absolute;top:16px;inset-inline-end:18px;
+  background:none;border:none;cursor:pointer;
+  color:var(--cream3);font-size:1.4rem;line-height:1;
+  transition:color .2s;padding:4px 8px}
+.int-close:hover{color:var(--gold)}
+.int-title{
+  font-size:1.3rem;font-weight:700;color:var(--cream);
+  margin-bottom:4px;line-height:1.3}
+[lang="ar"] .int-title{font-family:'Noto Sans Arabic',serif}
+[lang="en"] .int-title{font-family:'Bodoni Moda',serif}
+.int-sub{font-size:.85rem;color:var(--cream2);margin-bottom:26px;line-height:1.5}
+.int-field{margin-bottom:16px}
+.int-field label{
+  display:block;font-size:.78rem;font-weight:600;letter-spacing:.04em;
+  color:var(--cream2);margin-bottom:6px;font-family:'Jost',sans-serif;text-transform:uppercase}
+.int-field input,.int-field select,.int-field textarea{
+  width:100%;padding:11px 14px;border-radius:8px;
+  border:1px solid var(--glass-b);background:var(--bg2);
+  color:var(--cream);font-size:.9rem;font-family:'Jost','Noto Sans Arabic',sans-serif;
+  outline:none;transition:border-color .2s,box-shadow .2s}
+.int-field input:focus,.int-field select:focus,.int-field textarea:focus{
+  border-color:var(--gold);box-shadow:0 0 0 3px rgba(196,148,42,.12)}
+.int-field textarea{resize:vertical;min-height:76px}
+.int-field select option{background:var(--bg2);color:var(--cream)}
+.int-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:480px){.int-row{grid-template-columns:1fr}}
+.btn-int-submit{
+  width:100%;padding:14px;background:var(--gold);color:#0C0800;
+  border:none;border-radius:8px;cursor:pointer;font-weight:700;
+  font-family:'Jost','Noto Sans Arabic',sans-serif;font-size:.95rem;
+  letter-spacing:.03em;margin-top:8px;transition:all .25s;display:flex;
+  align-items:center;justify-content:center;gap:8px}
+.btn-int-submit:hover:not(:disabled){background:var(--gold-l);transform:translateY(-1px)}
+.btn-int-submit:disabled{opacity:.6;cursor:not-allowed}
+.int-success{
+  text-align:center;padding:20px 0 8px;display:none}
+.int-success-icon{
+  width:56px;height:56px;border-radius:50%;background:rgba(196,148,42,.12);
+  border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px}
+.int-success h3{font-size:1.1rem;color:var(--cream);margin-bottom:8px}
+[lang="ar"] .int-success h3{font-family:'Noto Sans Arabic',serif}
+.int-success p{font-size:.85rem;color:var(--cream2);line-height:1.6}
 </style>
 </head>
 <body>
@@ -643,10 +703,10 @@ body{background:var(--bg);color:var(--cream);overflow-x:hidden;
       <span class="ar-only">عروض الشركاء</span>
       <span class="en-only">Partner Offers</span>
     </a>
-    <a href="#hero" class="sb-cta-btn solid" onclick="closeSidebar()">
-      <span class="ar-only">احجز مكتبك</span>
-      <span class="en-only">Book Your Space</span>
-    </a>
+    <button class="sb-cta-btn solid" onclick="closeSidebar();openInterestForm(null)">
+      <span class="ar-only">استفسر عن مكتب</span>
+      <span class="en-only">Inquire Now</span>
+    </button>
   </div>
 </aside>
 <div id="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -700,10 +760,10 @@ body{background:var(--bg);color:var(--cream);overflow-x:hidden;
           <span class="ar-only">استعرض المساحات</span>
           <span class="en-only">Browse Spaces</span>
         </a>
-        <a href="#footer" class="btn-outline">
-          <span class="ar-only">تواصل معنا</span>
-          <span class="en-only">Contact Us</span>
-        </a>
+        <button class="btn-outline" onclick="openInterestForm(null)">
+          <span class="ar-only">استفسر الآن</span>
+          <span class="en-only">Inquire Now</span>
+        </button>
       </div>
     </div>
     <div class="hero-scroll">
@@ -820,6 +880,91 @@ body{background:var(--bg);color:var(--cream);overflow-x:hidden;
     <div class="testimonials-grid" id="testi-grid"></div>
   </section>
 
+  <!-- ═══ INTEREST FORM MODAL ═══ -->
+  <div id="interest-modal" class="int-overlay" onclick="if(event.target===this)closeInterestForm()">
+    <div class="int-box">
+      <button class="int-close" onclick="closeInterestForm()" aria-label="Close">&#215;</button>
+
+      <!-- Form state -->
+      <div id="int-form-state">
+        <h2 class="int-title">
+          <span class="ar-only">أبدِ اهتمامك بمكتبك المثالي</span>
+          <span class="en-only">Express Your Office Interest</span>
+        </h2>
+        <p class="int-sub">
+          <span class="ar-only">سنتواصل معك بأفضل عرض يناسب احتياجاتك تماماً</span>
+          <span class="en-only">We'll reach out with a tailored offer that fits your needs perfectly</span>
+        </p>
+        <form id="interest-form" onsubmit="submitInterestForm(event)" novalidate>
+          <div class="int-row">
+            <div class="int-field">
+              <label>
+                <span class="ar-only">الاسم الكامل *</span>
+                <span class="en-only">Full Name *</span>
+              </label>
+              <input type="text" id="int-name" required
+                placeholder="" autocomplete="name">
+            </div>
+            <div class="int-field">
+              <label>
+                <span class="ar-only">رقم الجوال *</span>
+                <span class="en-only">Phone Number *</span>
+              </label>
+              <input type="tel" id="int-phone" required
+                placeholder="" autocomplete="tel">
+            </div>
+          </div>
+          <div class="int-field">
+            <label>
+              <span class="ar-only">البريد الإلكتروني</span>
+              <span class="en-only">Email Address</span>
+            </label>
+            <input type="email" id="int-email"
+              placeholder="" autocomplete="email">
+          </div>
+          <div class="int-field">
+            <label>
+              <span class="ar-only">المساحة التي تهتم بها</span>
+              <span class="en-only">Space You're Interested In</span>
+            </label>
+            <select id="int-office">
+              <option value="">
+                <!-- placeholder set by JS -->
+              </option>
+            </select>
+          </div>
+          <div class="int-field">
+            <label>
+              <span class="ar-only">ملاحظة أو سؤال (اختياري)</span>
+              <span class="en-only">Message or Question (optional)</span>
+            </label>
+            <textarea id="int-message" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn-int-submit" id="int-submit-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <span class="ar-only">أرسل اهتمامك</span>
+            <span class="en-only">Send Interest</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Success state -->
+      <div class="int-success" id="int-success-state">
+        <div class="int-success-icon">
+          <svg width="26" height="26" fill="none" stroke="var(--gold)" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3>
+          <span class="ar-only">شكراً لك!</span>
+          <span class="en-only">Thank You!</span>
+        </h3>
+        <p>
+          <span class="ar-only">تم استلام طلبك بنجاح. سيتواصل معك فريق أبعاد قريباً بأفضل عرض يناسبك.</span>
+          <span class="en-only">Your inquiry has been received. The Abaad team will reach out soon with the best offer for you.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer id="footer" data-section="footer">
     <div class="footer-grid">
@@ -897,6 +1042,22 @@ const FB = {
 firebase.initializeApp(FB);
 const db = firebase.firestore();
 
+// ══════════════════════════════════════════════
+//  EMAILJS CONFIG — fill in after setup (see README)
+//  1. Go to https://www.emailjs.com and sign up free
+//  2. Add your email service (Gmail / Outlook)
+//  3. Create a template (use variables below)
+//  4. Paste your keys here
+// ══════════════════════════════════════════════
+const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // Account → API Keys
+const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // Email Services → Service ID
+const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // Email Templates → Template ID
+const NOTIFY_EMAIL        = 'your@email.com';    // ← your email address here
+
+if(EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY'){
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+}
+
 // ── THEME ──
 let currentTheme = localStorage.getItem('abaad_theme') || 'light';
 let heroParticles = null; // set by Three.js init
@@ -965,7 +1126,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
     desc:{ar:'مكتب خاص بإطلالة هادئة وأجواء احترافية ملهمة لأعمالك', en:'A private office with serene views and a professional atmosphere to inspire your work'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 15, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/office-4.jpg',
     photos:['images/office-4.jpg','images/office-4b.jpg','images/office-4c.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -979,7 +1140,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
     desc:{ar:'مكتب واسع يتيح لك بيئة إنتاجية هادئة ومريحة', en:'A spacious office offering a quiet and comfortable productive environment'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 15, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/office-10.jpg',
     photos:['images/office-10.jpg','images/office-10b.jpg','images/office-10c.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -993,7 +1154,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'١–٣ أشخاص', en:'1–3 People'},
     desc:{ar:'مكتب بتصميم عصري يجمع بين الخصوصية والتواصل مع مجتمع الأعمال', en:'A modernly designed office combining privacy with business community connectivity'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 15, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/office-16.jpg',
     photos:['images/office-16.jpg','images/office-16b.jpg','images/office-16c.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -1007,7 +1168,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
     desc:{ar:'بيئة عمل مثالية مجهزة بالكامل لاحتياجاتك اليومية والمهنية', en:'An ideal fully-equipped work environment for your daily and professional needs'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 15, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/office-17.jpg',
     photos:['images/office-17.jpg','images/office-17b.jpg','images/office-17c.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -1021,7 +1182,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
     desc:{ar:'مكتب راقٍ يتيح لك التركيز والإبداع في أجواء مهنية مريحة', en:'An upscale office allowing focus and creativity in a comfortable professional atmosphere'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 15, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/office-18.jpg',
     photos:['images/office-18.jpg','images/office-18b.jpg','images/office-18c.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -1035,7 +1196,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
     desc:{ar:'مكتب مميز يوفر الهدوء والخصوصية اللازمة لإنجاز أعمالك', en:'A distinguished office providing the quiet and privacy needed to accomplish your work'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 15, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/office-19.jpg',
     photos:['images/office-19.jpg','images/office-19b.jpg','images/office-19c.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -1049,7 +1210,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
     desc:{ar:'مكتب متميز بمساحة ملائمة تُلبّي احتياجات الفرق الصغيرة', en:'A distinguished office with suitable space meeting the needs of small teams'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 15, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/office-24.jpg',
     photos:['images/office-24.jpg','images/office-24b.jpg','images/office-24c.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -1063,7 +1224,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
     desc:{ar:'مكتب هادئ ومريح يوفر أجواء عمل احترافية وملهمة في قلب أبعاد', en:'A quiet and comfortable office providing a professional and inspiring work atmosphere at the heart of Abaad'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 15, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/office-27.jpg',
     photos:['images/office-27.jpg','images/office-27b.jpg','images/office-27c.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -1077,7 +1238,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'٢–٤ أشخاص', en:'2–4 People'},
     desc:{ar:'مكتب فاخر يجمع بين التصميم العصري والراحة لتحقيق أعلى مستويات الإنتاجية', en:'A luxurious office combining modern design and comfort to achieve the highest productivity levels'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 15, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/office-30.jpg',
     photos:['images/office-30.jpg','images/office-30b.jpg','images/office-30c.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -1091,7 +1252,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'حتى ٣٠ شخصاً', en:'Up to 30 People'},
     desc:{ar:'قاعة تدريب متكاملة مجهزة بأحدث التقنيات لتقديم الدورات والورش الاحترافية', en:'A fully-equipped training hall with the latest technology for delivering professional courses and workshops'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 60, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/hall-training.jpg',
     photos:['images/hall-training.jpg','images/hall-training-b.jpg','images/hall-training-c.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -1105,7 +1266,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'حتى ٨ أشخاص', en:'Up to 8 People'},
     desc:{ar:'قاعة اجتماعات أنيقة مثالية للاجتماعات الاحترافية والعروض التقديمية الخاصة', en:'An elegant meeting room ideal for professional meetings and private presentations'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 30, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/hall-meeting-s.jpg',
     photos:['images/hall-meeting-s.jpg','images/hall-meeting-s-b.jpg','images/hall-meeting-s-c.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -1119,7 +1280,7 @@ const OFFICES = [
     floor:{ar:'الطابق السابع', en:'Floor 7'},
     capacity:{ar:'حتى ٢٠ شخصاً', en:'Up to 20 People'},
     desc:{ar:'قاعة مؤتمرات فاخرة مجهزة بالكامل للاجتماعات الكبيرة والعروض التنفيذية المؤثرة', en:'A luxurious conference room fully-equipped for large meetings and impactful executive presentations'},
-    price:{ar:'تواصل للاستفسار', en:'Contact for Pricing'},
+    fromPrice: 45, // ↓ STARTING PRICE SAR/HR — change per office ↓
     photo:'images/hall-meeting-l.jpg',
     photos:['images/hall-meeting-l.jpg','images/hall-meeting-l-b.jpg'],
     // ↓ PUT ODOO BOOKING LINK HERE ↓
@@ -1163,14 +1324,16 @@ function buildOffices(){
         </div>
         <div class="office-action-col">
           <div class="office-price">
-            <span class="ar-only">${o.price.ar}</span>
-            <span class="en-only">${o.price.en}</span>
+            <span class="ar-only">تبدأ من ${o.fromPrice} ريال/ساعة</span>
+            <span class="en-only">From ${o.fromPrice} SAR/hr</span>
+            <div class="office-price-sub ar-only">اطّلع على العروض المخصصة</div>
+            <div class="office-price-sub en-only">Ask for tailored offers</div>
           </div>
-          <a href="${o.link}" class="btn-book" ${o.link==='#'?'onclick="return false"':''}>
-            <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-            <span class="ar-only">احجز الآن</span>
-            <span class="en-only">Book Now</span>
-          </a>
+          <button class="btn-book" onclick="openInterestForm('${o.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            <span class="ar-only">معلومات أكثر</span>
+            <span class="en-only">More Info</span>
+          </button>
         </div>
       </div>
       ${o.photos.length > 1 ? `
@@ -1594,6 +1757,92 @@ function animateCounters(){
     });
   },{threshold:.8});
   document.querySelectorAll('.stat-num[data-count]').forEach(el=>obs.observe(el));
+}
+
+// ── INTEREST FORM ──
+function openInterestForm(officeId){
+  const modal = document.getElementById('interest-modal');
+  const formState = document.getElementById('int-form-state');
+  const successState = document.getElementById('int-success-state');
+  const form = document.getElementById('interest-form');
+
+  // Reset to form state
+  form.reset();
+  formState.style.display = 'block';
+  successState.style.display = 'none';
+  const btn = document.getElementById('int-submit-btn');
+  btn.disabled = false;
+
+  // Populate office dropdown
+  const sel = document.getElementById('int-office');
+  const lang = document.documentElement.lang || 'ar';
+  sel.innerHTML = `<option value="">${lang==='ar'?'— اختر المساحة —':'— Select a space —'}</option>`
+    + OFFICES.map(o=>`<option value="${o.id}">${lang==='ar'?o.name.ar:o.name.en}</option>`).join('');
+
+  // Pre-select if called from a specific office
+  if(officeId) sel.value = officeId;
+
+  // Update placeholders by lang
+  document.getElementById('int-name').placeholder  = lang==='ar'?'مثال: مجتبى الحسن':'e.g. John Smith';
+  document.getElementById('int-phone').placeholder = lang==='ar'?'05X XXX XXXX':'+966 5X XXX XXXX';
+  document.getElementById('int-email').placeholder = lang==='ar'?'example@email.com':'example@email.com';
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(()=>document.getElementById('int-name').focus(), 300);
+}
+
+function closeInterestForm(){
+  document.getElementById('interest-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function submitInterestForm(e){
+  e.preventDefault();
+  const name  = document.getElementById('int-name').value.trim();
+  const phone = document.getElementById('int-phone').value.trim();
+  const email = document.getElementById('int-email').value.trim();
+  const office= document.getElementById('int-office').value;
+  const msg   = document.getElementById('int-message').value.trim();
+
+  if(!name || !phone){ return; }
+
+  const btn = document.getElementById('int-submit-btn');
+  btn.disabled = true;
+  const lang = document.documentElement.lang || 'ar';
+  btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> ${lang==='ar'?'جاري الإرسال...':'Sending...'}`;
+
+  const officeObj = OFFICES.find(o=>o.id===office);
+  const officeName = officeObj ? (lang==='ar'?officeObj.name.ar:officeObj.name.en) : (lang==='ar'?'غير محدد':'Not specified');
+
+  try{
+    await db.collection('office_inquiries').add({
+      name, phone, email, officeId: office, officeName,
+      message: msg, lang,
+      submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // ── Send email notification (non-blocking) ──
+    if(EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY'){
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        to_email:    NOTIFY_EMAIL,
+        visitor_name:  name,
+        visitor_phone: phone,
+        visitor_email: email || '—',
+        office_name:   officeName || '—',
+        visitor_message: msg || '—',
+        submitted_at: new Date().toLocaleString('ar-SA')
+      }).catch(e => console.warn('Email notification failed:', e));
+    }
+
+    document.getElementById('int-form-state').style.display = 'none';
+    document.getElementById('int-success-state').style.display = 'block';
+    setTimeout(closeInterestForm, 4000);
+  } catch(err){
+    console.error(err);
+    btn.disabled = false;
+    btn.innerHTML = `<span class="ar-only">أرسل اهتمامك</span><span class="en-only">Send Interest</span>`;
+  }
 }
 
 // ── INIT ──
