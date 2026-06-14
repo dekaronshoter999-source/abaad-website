@@ -1,229 +1,276 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" id="admin-root">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Abaad Admin Panel</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abaad Admin · لوحة التحكم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Jost:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C8A951;--gold-l:#F0D98A;--gold-d:#9A7E35;
+  --navy:#07091A;--navy-mid:#0D1225;--navy-card:#111828;
+  --navy-border:rgba(255,255,255,0.08);
+  --text:#E8ECF4;--text-muted:#6B778F;
+  --red:#F87171;--green:#4ADE80;
+  --sb-w:240px;--ease:cubic-bezier(.22,1,.36,1);
+}
+#admin-root[lang="en"] .ar-only{display:none}
+#admin-root[lang="ar"] .en-only{display:none}
+#admin-root[lang="ar"]{font-family:'Noto Sans Arabic','Jost',sans-serif}
+html{scroll-behavior:smooth}
+body{background:var(--navy);color:var(--text);font-family:'Jost','Noto Sans Arabic',sans-serif;min-height:100vh}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--navy)}
+::-webkit-scrollbar-thumb{background:rgba(200,169,81,.2);border-radius:3px}
 
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --gold: #C8A951; --gold-light: #F0D98A; --gold-dark: #9A7E35;
-      --navy: #07091A; --navy-mid: #0E1427; --navy-card: #111828;
-      --navy-border: rgba(255,255,255,0.08);
-      --text: #E8ECF4; --text-muted: #6B778F;
-      --red: #F87171; --green: #4ADE80;
-    }
-    html { scroll-behavior: smooth; }
-    body { background: var(--navy); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+/* LOGIN */
+#login-screen{
+  position:fixed;inset:0;z-index:999;
+  background:radial-gradient(ellipse at 50% 0%,rgba(200,169,81,.06) 0%,var(--navy) 55%);
+  display:flex;align-items:center;justify-content:center;
+}
+.login-card{
+  width:100%;max-width:400px;padding:48px 40px 40px;
+  background:var(--navy-card);border-radius:22px;
+  position:relative;overflow:hidden;text-align:center;
+  box-shadow:0 48px 100px rgba(0,0,0,.65),0 0 0 1px rgba(200,169,81,.15);
+}
+.login-card::before{
+  content:'';position:absolute;top:0;left:20px;right:20px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(200,169,81,.7),transparent);
+}
+.login-card::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% -10%,rgba(200,169,81,.07) 0%,transparent 65%);
+}
+.login-lang{
+  position:absolute;top:14px;right:14px;
+  padding:5px 12px;border-radius:16px;font-size:11px;font-weight:600;
+  background:rgba(200,169,81,.1);color:var(--gold);
+  border:1px solid rgba(200,169,81,.2);cursor:pointer;font-family:inherit;
+}
 
-    /* ── Login screen ── */
-    #login-screen {
-      position: fixed; inset: 0; z-index: 999;
-      background: var(--navy);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .login-card {
-      width: 100%; max-width: 400px; padding: 48px 40px;
-      background: var(--navy-card);
-      border: 1px solid rgba(200,169,81,0.2);
-      border-radius: 20px;
-      box-shadow: 0 40px 100px rgba(0,0,0,0.6);
-      text-align: center;
-    }
+/* SIDEBAR */
+#sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:var(--sb-w);
+  background:var(--navy-mid);border-right:1px solid var(--navy-border);
+  z-index:50;display:flex;flex-direction:column;
+  transition:transform .35s var(--ease);
+}
+.sb-logo{
+  padding:20px 20px 18px;border-bottom:1px solid var(--navy-border);
+  display:flex;align-items:center;gap:10px;
+}
+.sb-logo-name{
+  font-size:16px;font-weight:700;
+  background:linear-gradient(135deg,var(--gold-l),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.sb-logo-sub{font-size:10.5px;color:var(--text-muted);margin-top:2px;}
+.sb-nav{flex:1;padding:10px 0;overflow-y:auto;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 20px;font-size:13.5px;font-weight:500;
+  color:var(--text-muted);cursor:pointer;transition:all .2s;
+  border:none;background:none;width:100%;text-align:left;
+  border-left:2px solid transparent;position:relative;
+}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03);}
+.nav-item.active{color:var(--gold-l);border-left-color:var(--gold);background:rgba(200,169,81,.07);}
+.nav-icon{flex-shrink:0;opacity:.65;transition:opacity .2s;}
+.nav-item:hover .nav-icon,.nav-item.active .nav-icon{opacity:1;}
+.inq-badge{
+  position:absolute;top:9px;right:12px;
+  background:var(--gold);color:var(--navy);
+  border-radius:9px;padding:1px 6px;font-size:10px;font-weight:700;display:none;
+}
+.sb-footer{padding:14px 20px;border-top:1px solid var(--navy-border);display:flex;flex-direction:column;gap:1px;}
+.sb-link{
+  display:flex;align-items:center;gap:8px;padding:8px 2px;
+  font-size:12.5px;color:var(--text-muted);text-decoration:none;
+  transition:color .2s;background:none;border:none;cursor:pointer;
+  font-family:inherit;width:100%;text-align:left;
+}
+.sb-link:hover{color:var(--gold);}
+.sb-link.danger:hover{color:var(--red);}
 
-    /* ── Sidebar ── */
-    #sidebar {
-      position: fixed; top: 0; left: 0; bottom: 0;
-      width: 240px;
-      background: var(--navy-mid);
-      border-right: 1px solid var(--navy-border);
-      padding: 28px 0;
-      z-index: 50;
-      display: flex; flex-direction: column;
-    }
-    .nav-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 24px; font-size: 14px; font-weight: 500;
-      color: var(--text-muted); cursor: pointer;
-      transition: all 0.2s; border: none; background: none; width: 100%; text-align: left;
-      border-left: 3px solid transparent;
-    }
-    .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
-    .nav-item.active { color: var(--gold); border-left-color: var(--gold); background: rgba(200,169,81,0.07); }
+/* MAIN */
+#main{margin-left:var(--sb-w);min-height:100vh;}
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:rgba(7,9,26,.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--navy-border);
+  padding:14px 28px;display:flex;align-items:center;justify-content:space-between;
+}
+.topbar-title{font-size:17px;font-weight:700;}
+.topbar-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.lang-btn{
+  padding:6px 14px;border-radius:18px;font-size:12px;font-weight:600;
+  background:rgba(200,169,81,.1);color:var(--gold);
+  border:1px solid rgba(200,169,81,.22);cursor:pointer;font-family:inherit;transition:all .2s;
+}
+.lang-btn:hover{background:rgba(200,169,81,.2);}
+.admin-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--gold-d));
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
 
-    /* ── Main content ── */
-    #main { margin-left: 240px; min-height: 100vh; }
-    .topbar {
-      position: sticky; top: 0; z-index: 40;
-      background: rgba(7,9,26,0.9); backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--navy-border);
-      padding: 16px 32px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .page-content { padding: 32px; }
+/* PAGE */
+.page-content{padding:26px 28px 48px;}
 
-    /* ── Cards ── */
-    .card {
-      background: var(--navy-card);
-      border: 1px solid var(--navy-border);
-      border-radius: 16px;
-      padding: 24px;
-    }
-    .card-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    .card-title { font-size: 16px; font-weight: 600; }
+/* STATS */
+.stats-row{display:grid;gap:14px;margin-bottom:22px;}
+.stat-card{
+  background:var(--navy-card);border:1px solid var(--navy-border);
+  border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(200,169,81,.3),transparent);
+}
+.stat-label{font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.07em;}
+.stat-value{font-size:30px;font-weight:700;font-family:'Playfair Display',serif;line-height:1;}
+.sv-gold{background:linear-gradient(135deg,var(--gold-l),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sv-green{color:var(--green);}.sv-red{color:var(--red);}.sv-muted{color:var(--text-muted);}
+.sv-sm{font-size:14px;font-weight:600;font-family:inherit;}
 
-    /* ── Form inputs ── */
-    .inp {
-      background: rgba(255,255,255,0.05);
-      border: 1.5px solid rgba(255,255,255,0.1);
-      color: var(--text); border-radius: 10px;
-      padding: 11px 15px; font-size: 14px; font-family: inherit;
-      width: 100%; transition: border-color 0.2s, background 0.2s;
-    }
-    .inp:focus { outline: none; border-color: var(--gold); background: rgba(200,169,81,0.06); }
-    .inp::placeholder { color: rgba(255,255,255,0.22); }
-    label.lbl { display: block; font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 7px; }
+/* CARDS */
+.card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:16px;overflow:hidden;}
+.card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:17px 22px;border-bottom:1px solid var(--navy-border);
+}
+.card-title{font-size:15px;font-weight:600;}
 
-    /* ── Buttons ── */
-    .btn {
-      padding: 10px 20px; border-radius: 9px; font-size: 14px;
-      font-weight: 600; font-family: inherit; cursor: pointer;
-      border: none; transition: all 0.22s;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-      color: var(--navy);
-    }
-    .btn-primary:hover { background: linear-gradient(135deg, var(--gold-light), var(--gold)); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(200,169,81,0.3); }
-    .btn-ghost { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid rgba(255,255,255,0.1); }
-    .btn-ghost:hover { background: rgba(255,255,255,0.10); }
-    .btn-danger { background: rgba(248,113,113,0.12); color: var(--red); border: 1px solid rgba(248,113,113,0.25); }
-    .btn-danger:hover { background: rgba(248,113,113,0.22); }
-    .btn-sm { padding: 7px 14px; font-size: 13px; }
-    .btn-full { width: 100%; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px;}
+.tbl th{
+  text-align:left;padding:11px 18px;
+  font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-muted);border-bottom:1px solid var(--navy-border);white-space:nowrap;
+}
+.tbl td{padding:13px 18px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(255,255,255,.02);}
 
-    /* ── Table ── */
-    .tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .tbl th {
-      text-align: left; padding: 12px 16px;
-      font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--text-muted); border-bottom: 1px solid var(--navy-border);
-    }
-    .tbl td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
-    .tbl tr:last-child td { border-bottom: none; }
-    .tbl tr:hover td { background: rgba(255,255,255,0.02); }
+/* FORM */
+.inp{
+  background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);
+  color:var(--text);border-radius:10px;padding:11px 14px;font-size:14px;
+  font-family:inherit;width:100%;transition:border-color .2s,background .2s;
+}
+.inp:focus{outline:none;border-color:var(--gold);background:rgba(200,169,81,.06);}
+.inp::placeholder{color:rgba(255,255,255,.2);}
+textarea.inp{resize:vertical;}
+.lbl{display:block;font-size:11.5px;font-weight:500;color:var(--text-muted);margin-bottom:6px;}
+.field{margin-bottom:16px;}
+.field-hint{font-size:11px;color:var(--text-muted);margin-top:5px;}
+.field-row{display:grid;gap:14px;margin-bottom:16px;}
 
-    /* ── Badges ── */
-    .badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 10px; border-radius: 20px;
-      font-size: 11px; font-weight: 600;
-    }
-    .badge-green { background: rgba(74,222,128,0.12); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
-    .badge-red   { background: rgba(248,113,113,0.12); color: var(--red);   border: 1px solid rgba(248,113,113,0.25); }
-    .badge-gold  { background: rgba(200,169,81,0.12);  color: var(--gold);  border: 1px solid rgba(200,169,81,0.25); }
+/* BUTTONS */
+.btn{
+  padding:10px 20px;border-radius:9px;font-size:13.5px;font-weight:600;
+  font-family:inherit;cursor:pointer;border:none;transition:all .22s;
+  display:inline-flex;align-items:center;gap:7px;
+}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-d));color:var(--navy);}
+.btn-primary:hover{background:linear-gradient(135deg,var(--gold-l),var(--gold));transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,169,81,.3);}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.1);}
+.btn-ghost:hover{background:rgba(255,255,255,.10);}
+.btn-danger{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.22);}
+.btn-danger:hover{background:rgba(248,113,113,.2);}
+.btn-sm{padding:7px 13px;font-size:12.5px;}
+.btn-full{width:100%;justify-content:center;}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
 
-    /* ── Modal ── */
-    #modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200;
-      display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(4px); padding: 20px;
-    }
-    #modal-box {
-      background: var(--navy-card); border: 1px solid rgba(200,169,81,0.2);
-      border-radius: 18px; padding: 32px; width: 100%; max-width: 560px;
-      max-height: 90vh; overflow-y: auto;
-    }
-    #modal-box::-webkit-scrollbar { width: 4px; }
-    #modal-box::-webkit-scrollbar-thumb { background: rgba(200,169,81,0.2); border-radius:2px; }
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.badge-green{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.22);}
+.badge-red{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.22);}
+.badge-gold{background:rgba(200,169,81,.12);color:var(--gold);border:1px solid rgba(200,169,81,.25);}
+.badge-blue{background:rgba(100,180,255,.1);color:#80c4ff;border:1px solid rgba(100,180,255,.2);}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
 
-    /* ── Toast ── */
-    #toast {
-      position: fixed; bottom: 26px; right: 26px;
-      padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 500;
-      z-index: 999; transform: translateY(80px); opacity: 0;
-      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
-      pointer-events: none;
-    }
-    #toast.show { transform: translateY(0); opacity: 1; }
-    #toast.success { background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.3); color: var(--green); }
-    #toast.error   { background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.3); color: var(--red); }
+/* TOGGLE */
+.toggle{position:relative;width:42px;height:23px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;border-radius:12px;background:rgba(255,255,255,.1);cursor:pointer;transition:background .25s;}
+.toggle-track::before{content:'';position:absolute;width:17px;height:17px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .25s;}
+.toggle input:checked+.toggle-track{background:var(--gold);}
+.toggle input:checked+.toggle-track::before{transform:translateX(19px);}
+.toggle-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 16px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.07);border-radius:10px;margin-bottom:16px;
+}
+.toggle-row-label div:first-child{font-size:14px;font-weight:500;}
+.toggle-row-label div:last-child{font-size:12px;color:var(--text-muted);margin-top:2px;}
 
-    /* ── Stats ── */
-    .stat-card {
-      background: var(--navy-card); border: 1px solid var(--navy-border);
-      border-radius: 14px; padding: 20px 24px;
-    }
-    .stat-value { font-size: 32px; font-weight: 700; font-family: 'Playfair Display', serif; }
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(5px);padding:20px;
+}
+.modal-box{
+  background:var(--navy-card);border-radius:18px;
+  padding:28px 28px 24px;width:100%;max-width:560px;
+  max-height:90vh;overflow-y:auto;position:relative;
+  box-shadow:0 40px 80px rgba(0,0,0,.5),0 0 0 1px rgba(200,169,81,.15);
+}
+.modal-box::before{
+  content:'';position:absolute;top:0;left:20px;right:20px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(200,169,81,.5),transparent);
+}
+.modal-box::-webkit-scrollbar{width:4px;}
+.modal-box::-webkit-scrollbar-thumb{background:rgba(200,169,81,.2);border-radius:2px;}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
+.modal-ttl{font-size:18px;font-weight:700;}
+.modal-x{
+  background:rgba(255,255,255,.07);border:none;color:var(--text);
+  width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:background .2s;
+}
+.modal-x:hover{background:rgba(255,255,255,.13);}
 
-    /* ── Toggle switch ── */
-    .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-    .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-track {
-      position: absolute; inset: 0; border-radius: 12px;
-      background: rgba(255,255,255,0.1); cursor: pointer; transition: background 0.25s;
-    }
-    .toggle-track::before {
-      content: ''; position: absolute;
-      width: 18px; height: 18px; border-radius: 50%;
-      background: #fff; top: 3px; left: 3px;
-      transition: transform 0.25s;
-    }
-    .toggle input:checked + .toggle-track { background: var(--gold); }
-    .toggle input:checked + .toggle-track::before { transform: translateX(20px); }
+/* PROMO */
+.promo-preview-tag{
+  display:inline-block;font-family:'Courier New',monospace;
+  font-size:13px;letter-spacing:.1em;font-weight:700;
+  color:var(--gold-l);background:rgba(200,169,81,.1);
+  border:1px dashed rgba(200,169,81,.4);border-radius:7px;padding:5px 13px;
+}
+.gold-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(200,169,81,.25),transparent);margin:18px 0;}
 
-    /* ── Promo badge ── */
-    .promo-preview {
-      display: inline-block; font-family: 'Courier New', monospace;
-      font-size: 14px; letter-spacing: 0.1em; font-weight: 700;
-      color: var(--gold-light); background: rgba(200,169,81,0.12);
-      border: 1px dashed rgba(200,169,81,0.4); border-radius: 8px;
-      padding: 6px 14px;
-    }
+/* TOAST */
+#toast{
+  position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:12px;
+  font-size:13.5px;font-weight:500;z-index:999;
+  transform:translateY(80px);opacity:0;
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  pointer-events:none;white-space:nowrap;
+}
+#toast.show{transform:translateY(0);opacity:1;}
+#toast.success{background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.28);color:var(--green);}
+#toast.error{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.28);color:var(--red);}
 
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: var(--navy); }
-    ::-webkit-scrollbar-thumb { background: rgba(200,169,81,0.2); border-radius: 3px; }
-
-    /* ── Responsive ── */
-    @media (max-width: 768px) {
-      #sidebar { transform: translateX(-100%); }
-      #main { margin-left: 0; }
-    }
-
-    /* ── Gold line ── */
-    .gold-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(200,169,81,0.3), transparent); margin: 24px 0; }
-
-    /* ── Abaad product modal ── */
-    #abaad-modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 200;
-      display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(4px); padding: 20px;
-    }
-    #abaad-modal-box { background: var(--navy-card); border: 1px solid rgba(200,169,81,0.22); border-radius: 18px; padding: 32px; width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; }
-    #abaad-modal-box::-webkit-scrollbar { width: 4px; }
-    #abaad-modal-box::-webkit-scrollbar-thumb { background: rgba(200,169,81,0.2); border-radius: 2px; }
-    textarea.inp { resize: vertical; }
-  </style>
+@media(max-width:768px){#sidebar{transform:translateX(-100%);}#main{margin-left:0;}}
+</style>
 </head>
 <body>
 
-<!-- ════════════════════ LOGIN SCREEN ════════════════════ -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
+    <button class="login-lang" onclick="toggleAdminLang()">EN / ع</button>
     <div style="margin:0 auto 20px;width:fit-content;">
-      <svg width="52" height="58" viewBox="0 0 60 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="48" height="54" viewBox="0 0 60 68" fill="none">
         <polygon points="30,2 58,28 30,58 2,28" fill="#F7BC00"/>
         <polygon points="2,28 30,2 30,58" fill="#C8900A" opacity="0.28"/>
         <line x1="30" y1="2" x2="30" y2="58" stroke="rgba(255,255,255,0.55)" stroke-width="1.8"/>
@@ -232,143 +279,163 @@
         <path d="M22,22 Q28,16 30,22 Q32,28 38,24 Q34,32 30,30 Q26,34 24,28 Z" fill="none" stroke="rgba(255,255,255,0.80)" stroke-width="1.4"/>
       </svg>
     </div>
-    <h1 style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:6px;">لوحة التحكم</h1>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:32px;">إدارة مساحة أبعاد</p>
-
-    <div style="margin-bottom:16px;text-align:left;">
-      <label class="lbl">Password</label>
-      <input type="password" id="pw-input" class="inp" placeholder="Enter admin password"
-             onkeydown="if(event.key==='Enter')doLogin()">
+    <h1 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px;">
+      <span class="ar-only">لوحة التحكم</span>
+      <span class="en-only">Admin Panel</span>
+    </h1>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:30px;">
+      <span class="ar-only">إدارة مساحة أبعاد للعمل</span>
+      <span class="en-only">Abaad Coworking Management</span>
+    </p>
+    <div style="text-align:left;margin-bottom:14px;">
+      <label class="lbl">
+        <span class="ar-only">كلمة المرور</span>
+        <span class="en-only">Password</span>
+      </label>
+      <input type="password" id="pw-input" class="inp"
+        placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    <div id="login-err" style="display:none;color:var(--red);font-size:13px;margin-bottom:14px;text-align:left;">
-      Incorrect password. Please try again.
+    <div id="login-err" style="display:none;color:var(--red);font-size:13px;margin-bottom:12px;text-align:left;">
+      <span class="ar-only">كلمة المرور غير صحيحة، حاول مجدداً</span>
+      <span class="en-only">Incorrect password. Please try again.</span>
     </div>
-    <button class="btn btn-primary btn-full" onclick="doLogin()">Sign In</button>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">
+      <span class="ar-only">دخول</span>
+      <span class="en-only">Sign In</span>
+    </button>
   </div>
 </div>
 
-<!-- ════════════════════ SIDEBAR ════════════════════ -->
+<!-- SIDEBAR -->
 <div id="sidebar" style="display:none;">
-  <div style="padding:0 24px 24px;border-bottom:1px solid var(--navy-border);">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <svg width="34" height="38" viewBox="0 0 60 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-        <polygon points="30,2 58,28 30,58 2,28" fill="#F7BC00"/>
-        <polygon points="2,28 30,2 30,58" fill="#C8900A" opacity="0.28"/>
-        <line x1="30" y1="2" x2="30" y2="58" stroke="rgba(255,255,255,0.55)" stroke-width="1.8"/>
-        <path d="M22,22 Q28,16 30,22 Q32,28 38,24 Q34,32 30,30 Q26,34 24,28 Z" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.2"/>
-      </svg>
-      <div>
-        <div style="font-size:15px;font-weight:700;color:#F0D98A;">أبعاد</div>
-        <div style="font-size:11px;color:var(--text-muted);">Admin Panel</div>
+  <div class="sb-logo">
+    <svg width="32" height="36" viewBox="0 0 60 68" fill="none" style="flex-shrink:0;">
+      <polygon points="30,2 58,28 30,58 2,28" fill="#F7BC00"/>
+      <polygon points="2,28 30,2 30,58" fill="#C8900A" opacity="0.28"/>
+      <line x1="30" y1="2" x2="30" y2="58" stroke="rgba(255,255,255,0.55)" stroke-width="1.8"/>
+      <path d="M22,22 Q28,16 30,22 Q32,28 38,24 Q34,32 30,30 Q26,34 24,28 Z" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.2"/>
+    </svg>
+    <div>
+      <div class="sb-logo-name">أبعاد · Abaad</div>
+      <div class="sb-logo-sub">
+        <span class="ar-only">لوحة التحكم</span>
+        <span class="en-only">Admin Panel</span>
       </div>
     </div>
   </div>
 
-  <nav style="padding:16px 0;flex:1;">
+  <nav class="sb-nav">
     <button class="nav-item active" id="nav-offers" onclick="showTab('offers')">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg>
-      Partner Offers
+      <svg class="nav-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg>
+      <span class="ar-only">عروض الشركاء</span>
+      <span class="en-only">Partner Offers</span>
     </button>
     <button class="nav-item" id="nav-leads" onclick="showTab('leads')">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-      Visitor Leads
+      <svg class="nav-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      <span class="ar-only">بيانات الزوار</span>
+      <span class="en-only">Visitor Leads</span>
     </button>
     <button class="nav-item" id="nav-claims" onclick="showTab('claims')">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><polyline points="7 8 10 11 17 4"/></svg>
-      Claimed Codes
+      <svg class="nav-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><polyline points="7 8 10 11 17 4"/></svg>
+      <span class="ar-only">الكودات المطالب بها</span>
+      <span class="en-only">Claimed Codes</span>
     </button>
     <button class="nav-item" id="nav-abaad" onclick="showTab('abaad')">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="8.5" x2="22" y2="8.5"/></svg>
-      Abaad Offers
+      <svg class="nav-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="8.5" x2="22" y2="8.5"/></svg>
+      <span class="ar-only">عروض أبعاد</span>
+      <span class="en-only">Abaad Offers</span>
     </button>
-    <button class="nav-item" id="nav-inquiries" onclick="showTab('inquiries')" style="position:relative;">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      Office Inquiries
-      <span id="inq-badge" style="display:none;position:absolute;top:8px;inset-inline-end:14px;background:#E8B84B;color:#0C0800;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;"></span>
+    <button class="nav-item" id="nav-inquiries" onclick="showTab('inquiries')">
+      <svg class="nav-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="ar-only">استفسارات المكاتب</span>
+      <span class="en-only">Office Inquiries</span>
+      <span class="inq-badge" id="inq-badge"></span>
     </button>
   </nav>
 
-  <div style="padding:16px 24px;border-top:1px solid var(--navy-border);">
-    <a href="index.html" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);text-decoration:none;transition:color 0.2s;"
-       onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      Partner Offers Page
+  <div class="sb-footer">
+    <a href="partner-offers.html" target="_blank" class="sb-link">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      <span class="ar-only">صفحة عروض الشركاء</span>
+      <span class="en-only">Partner Offers Page</span>
     </a>
-    <a href="abaad-offers.html" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);text-decoration:none;transition:color 0.2s;margin-top:10px;"
-       onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      Abaad Offers Page
+    <a href="abaad-offers.html" target="_blank" class="sb-link">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      <span class="ar-only">صفحة عروض أبعاد</span>
+      <span class="en-only">Abaad Offers Page</span>
     </a>
-    <button onclick="doLogout()" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);background:none;border:none;cursor:pointer;margin-top:14px;transition:color 0.2s;font-family:inherit;"
-       onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text-muted)'">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Sign Out
+    <div style="height:1px;background:var(--navy-border);margin:6px 0;"></div>
+    <button onclick="toggleAdminLang()" class="sb-link">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+      <span class="ar-only">English / الإنجليزية</span>
+      <span class="en-only">العربية / Arabic</span>
+    </button>
+    <button onclick="doLogout()" class="sb-link danger">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span class="ar-only">تسجيل الخروج</span>
+      <span class="en-only">Sign Out</span>
     </button>
   </div>
 </div>
 
-<!-- ════════════════════ MAIN CONTENT ════════════════════ -->
+<!-- MAIN -->
 <div id="main" style="display:none;">
 
   <!-- Topbar -->
   <div class="topbar">
     <div>
-      <h2 id="page-title" style="font-size:18px;font-weight:700;">Partner Offers</h2>
-      <p id="page-sub" style="font-size:12px;color:var(--text-muted);margin-top:2px;">Manage partner deals shown on the landing page</p>
+      <div class="topbar-title" id="page-title">Partner Offers</div>
+      <div class="topbar-sub" id="page-sub">Manage partner deals shown on the landing page</div>
     </div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <span style="font-size:13px;color:var(--text-muted);">Admin</span>
-      <div style="width:34px;height:34px;background:linear-gradient(135deg,#C8A951,#9A7E35);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-        <svg width="16" height="16" fill="none" stroke="#07091A" stroke-width="2.2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <div class="topbar-right">
+      <button class="lang-btn" onclick="toggleAdminLang()">
+        <span class="ar-only">English</span>
+        <span class="en-only">العربية</span>
+      </button>
+      <div class="admin-avatar">
+        <svg width="15" height="15" fill="none" stroke="#07091A" stroke-width="2.2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </div>
     </div>
   </div>
 
-  <!-- ─── OFFERS TAB ─── -->
+  <!-- ─── PARTNER OFFERS TAB ─── -->
   <div id="tab-offers" class="page-content">
-
-    <!-- Stat row -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;" id="stats-row">
+    <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Active Offers</div>
-        <div class="stat-value gold-text" id="stat-active">—</div>
+        <div class="stat-label"><span class="ar-only">عروض نشطة</span><span class="en-only">Active Offers</span></div>
+        <div class="stat-value sv-gold" id="stat-active">—</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Total Offers</div>
+        <div class="stat-label"><span class="ar-only">إجمالي العروض</span><span class="en-only">Total Offers</span></div>
         <div class="stat-value" id="stat-total">—</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Expiring This Week</div>
-        <div class="stat-value" style="color:var(--red);" id="stat-expiring">—</div>
+        <div class="stat-label"><span class="ar-only">تنتهي هذا الأسبوع</span><span class="en-only">Expiring This Week</span></div>
+        <div class="stat-value sv-red" id="stat-expiring">—</div>
       </div>
     </div>
-
-    <!-- Offers table card -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">All Offers</span>
-        <button class="btn btn-primary" onclick="openModal()">
-          <span style="display:flex;align-items:center;gap:8px;">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add Offer
-          </span>
+        <span class="card-title"><span class="ar-only">جميع العروض</span><span class="en-only">All Offers</span></span>
+        <button class="btn btn-primary btn-sm" onclick="openModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span class="ar-only">إضافة عرض</span><span class="en-only">Add Offer</span>
         </button>
       </div>
-
       <div style="overflow-x:auto;">
         <table class="tbl" id="offers-table">
-          <thead>
-            <tr>
-              <th>Company</th>
-              <th>Offer</th>
-              <th>Promo Code</th>
-              <th>Expires</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th><span class="ar-only">الشركة</span><span class="en-only">Company</span></th>
+            <th><span class="ar-only">العرض</span><span class="en-only">Offer</span></th>
+            <th><span class="ar-only">كود الخصم</span><span class="en-only">Promo Code</span></th>
+            <th><span class="ar-only">الانتهاء</span><span class="en-only">Expires</span></th>
+            <th><span class="ar-only">الحالة</span><span class="en-only">Status</span></th>
+            <th><span class="ar-only">إجراءات</span><span class="en-only">Actions</span></th>
+          </tr></thead>
           <tbody id="offers-tbody">
-            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">Loading…</td></tr>
+            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
+              <span class="ar-only">جاري التحميل…</span><span class="en-only">Loading…</span>
+            </td></tr>
           </tbody>
         </table>
       </div>
@@ -377,52 +444,44 @@
 
   <!-- ─── LEADS TAB ─── -->
   <div id="tab-leads" class="page-content" style="display:none;">
-
-    <!-- Stats -->
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:28px;">
+    <div class="stats-row" style="grid-template-columns:repeat(2,1fr);">
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Total Leads</div>
+        <div class="stat-label"><span class="ar-only">إجمالي الزوار</span><span class="en-only">Total Leads</span></div>
         <div class="stat-value" id="stat-leads">—</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">This Month</div>
-        <div class="stat-value" style="color:var(--gold);" id="stat-leads-month">—</div>
+        <div class="stat-label"><span class="ar-only">هذا الشهر</span><span class="en-only">This Month</span></div>
+        <div class="stat-value sv-gold" id="stat-leads-month">—</div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Visitor Leads</span>
-        <div style="display:flex;gap:10px;">
+        <span class="card-title"><span class="ar-only">بيانات الزوار</span><span class="en-only">Visitor Leads</span></span>
+        <div style="display:flex;gap:8px;">
           <button class="btn btn-ghost btn-sm" onclick="exportCSV()">
-            <span style="display:flex;align-items:center;gap:7px;">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Export CSV
-            </span>
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="ar-only">تصدير CSV</span><span class="en-only">Export CSV</span>
           </button>
           <button class="btn btn-danger btn-sm" onclick="clearAllLeads()">
-            <span style="display:flex;align-items:center;gap:7px;">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-              Clear All
-            </span>
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+            <span class="ar-only">حذف الكل</span><span class="en-only">Clear All</span>
           </button>
         </div>
       </div>
-
       <div style="overflow-x:auto;">
         <table class="tbl">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Source</th>
-              <th>Language</th>
-              <th>Date</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th>#</th>
+            <th><span class="ar-only">الاسم</span><span class="en-only">Name</span></th>
+            <th><span class="ar-only">الجوال</span><span class="en-only">Phone</span></th>
+            <th><span class="ar-only">المصدر</span><span class="en-only">Source</span></th>
+            <th><span class="ar-only">اللغة</span><span class="en-only">Lang</span></th>
+            <th><span class="ar-only">التاريخ</span><span class="en-only">Date</span></th>
+          </tr></thead>
           <tbody id="leads-tbody">
-            <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">Loading…</td></tr>
+            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
+              <span class="ar-only">جاري التحميل…</span><span class="en-only">Loading…</span>
+            </td></tr>
           </tbody>
         </table>
       </div>
@@ -431,99 +490,91 @@
 
   <!-- ─── CLAIMS TAB ─── -->
   <div id="tab-claims" class="page-content" style="display:none;">
-
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
+    <div class="stats-row" style="grid-template-columns:repeat(4,1fr);">
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Total Claims</div>
+        <div class="stat-label"><span class="ar-only">إجمالي الكودات</span><span class="en-only">Total Claims</span></div>
         <div class="stat-value" id="stat-claims-total">—</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Active Codes</div>
-        <div class="stat-value" style="color:var(--green);" id="stat-claims-active">—</div>
+        <div class="stat-label"><span class="ar-only">كودات نشطة</span><span class="en-only">Active Codes</span></div>
+        <div class="stat-value sv-green" id="stat-claims-active">—</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Used Codes</div>
-        <div class="stat-value" style="color:var(--gold);" id="stat-claims-used">—</div>
+        <div class="stat-label"><span class="ar-only">مستخدمة</span><span class="en-only">Used Codes</span></div>
+        <div class="stat-value sv-gold" id="stat-claims-used">—</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Cancelled</div>
-        <div class="stat-value" style="color:var(--text-muted);" id="stat-claims-cancelled">—</div>
+        <div class="stat-label"><span class="ar-only">ملغاة</span><span class="en-only">Cancelled</span></div>
+        <div class="stat-value sv-muted" id="stat-claims-cancelled">—</div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-header">
-        <span class="card-title">All Claimed Codes</span>
+        <span class="card-title"><span class="ar-only">جميع الكودات</span><span class="en-only">All Claimed Codes</span></span>
         <button class="btn btn-ghost btn-sm" onclick="exportClaimsCSV()">
-          <span style="display:flex;align-items:center;gap:7px;">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export CSV
-          </span>
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span class="ar-only">تصدير CSV</span><span class="en-only">Export CSV</span>
         </button>
       </div>
       <div style="overflow-x:auto;">
         <table class="tbl">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Visitor</th>
-              <th>Phone</th>
-              <th>Offer</th>
-              <th>Valid Until</th>
-              <th>Status</th>
-              <th>Mark Used</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th><span class="ar-only">الكود</span><span class="en-only">Code</span></th>
+            <th><span class="ar-only">الزائر</span><span class="en-only">Visitor</span></th>
+            <th><span class="ar-only">الجوال</span><span class="en-only">Phone</span></th>
+            <th><span class="ar-only">العرض</span><span class="en-only">Offer</span></th>
+            <th><span class="ar-only">صالح حتى</span><span class="en-only">Valid Until</span></th>
+            <th><span class="ar-only">الحالة</span><span class="en-only">Status</span></th>
+            <th><span class="ar-only">تعليم مستخدم</span><span class="en-only">Mark Used</span></th>
+          </tr></thead>
           <tbody id="claims-tbody">
-            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">Loading…</td></tr>
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">
+              <span class="ar-only">جاري التحميل…</span><span class="en-only">Loading…</span>
+            </td></tr>
           </tbody>
         </table>
       </div>
     </div>
-    </div>
+  </div>
 
   <!-- ─── ABAAD OFFERS TAB ─── -->
   <div id="tab-abaad" class="page-content" style="display:none;">
-
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;">
+    <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Total Abaad Offers</div>
+        <div class="stat-label"><span class="ar-only">إجمالي عروض أبعاد</span><span class="en-only">Total Abaad Offers</span></div>
         <div class="stat-value" id="stat-abaad-total">—</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Active</div>
-        <div class="stat-value" style="color:var(--green);" id="stat-abaad-active">—</div>
+        <div class="stat-label"><span class="ar-only">نشطة</span><span class="en-only">Active</span></div>
+        <div class="stat-value sv-green" id="stat-abaad-active">—</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Registrations</div>
-        <div class="stat-value" style="color:var(--gold);" id="stat-abaad-regs">—</div>
+        <div class="stat-label"><span class="ar-only">التسجيلات</span><span class="en-only">Registrations</span></div>
+        <div class="stat-value sv-gold" id="stat-abaad-regs">—</div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Abaad Offers</span>
-        <button class="btn btn-primary" onclick="openAbaadModal()">
-          <span style="display:flex;align-items:center;gap:8px;">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add Abaad Offer
-          </span>
+        <span class="card-title"><span class="ar-only">عروض أبعاد</span><span class="en-only">Abaad Offers</span></span>
+        <button class="btn btn-primary btn-sm" onclick="openAbaadModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span class="ar-only">إضافة عرض أبعاد</span><span class="en-only">Add Abaad Offer</span>
         </button>
       </div>
       <div style="overflow-x:auto;">
         <table class="tbl">
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Title</th>
-              <th>Price</th>
-              <th>Signup Link</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th><span class="ar-only">الصورة</span><span class="en-only">Image</span></th>
+            <th><span class="ar-only">العنوان</span><span class="en-only">Title</span></th>
+            <th><span class="ar-only">السعر</span><span class="en-only">Price</span></th>
+            <th><span class="ar-only">رابط التسجيل</span><span class="en-only">Signup Link</span></th>
+            <th><span class="ar-only">الحالة</span><span class="en-only">Status</span></th>
+            <th><span class="ar-only">إجراءات</span><span class="en-only">Actions</span></th>
+          </tr></thead>
           <tbody id="abaad-tbody">
-            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">Loading…</td></tr>
+            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
+              <span class="ar-only">جاري التحميل…</span><span class="en-only">Loading…</span>
+            </td></tr>
           </tbody>
         </table>
       </div>
@@ -532,291 +583,244 @@
 
   <!-- ─── OFFICE INQUIRIES TAB ─── -->
   <div id="tab-inquiries" class="page-content" style="display:none;">
-
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;">
+    <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Total Inquiries</div>
-        <div class="stat-value gold-text" id="stat-inq-total">—</div>
+        <div class="stat-label"><span class="ar-only">إجمالي الاستفسارات</span><span class="en-only">Total Inquiries</span></div>
+        <div class="stat-value sv-gold" id="stat-inq-total">—</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">This Week</div>
-        <div class="stat-value" style="color:var(--green);" id="stat-inq-week">—</div>
+        <div class="stat-label"><span class="ar-only">هذا الأسبوع</span><span class="en-only">This Week</span></div>
+        <div class="stat-value sv-green" id="stat-inq-week">—</div>
       </div>
       <div class="stat-card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Most Requested</div>
-        <div class="stat-value" style="font-size:14px;font-weight:600;color:var(--gold);" id="stat-inq-top">—</div>
+        <div class="stat-label"><span class="ar-only">الأكثر طلباً</span><span class="en-only">Most Requested</span></div>
+        <div class="stat-value sv-sm" id="stat-inq-top">—</div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Interested Visitors</span>
-        <button class="btn btn-ghost" onclick="exportInquiriesCSV()" style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Export CSV
+        <span class="card-title"><span class="ar-only">الزوار المهتمون</span><span class="en-only">Interested Visitors</span></span>
+        <button class="btn btn-ghost btn-sm" onclick="exportInquiriesCSV()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span class="ar-only">تصدير CSV</span><span class="en-only">Export CSV</span>
         </button>
       </div>
       <div style="overflow-x:auto;">
         <table class="tbl">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Email</th>
-              <th>Office Interested In</th>
-              <th>Message</th>
-              <th>Date</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th><span class="ar-only">الاسم</span><span class="en-only">Name</span></th>
+            <th><span class="ar-only">الجوال</span><span class="en-only">Phone</span></th>
+            <th><span class="ar-only">البريد</span><span class="en-only">Email</span></th>
+            <th><span class="ar-only">المكتب المطلوب</span><span class="en-only">Office Interested In</span></th>
+            <th><span class="ar-only">الرسالة</span><span class="en-only">Message</span></th>
+            <th><span class="ar-only">التاريخ</span><span class="en-only">Date</span></th>
+            <th><span class="ar-only">حذف</span><span class="en-only">Action</span></th>
+          </tr></thead>
           <tbody id="inq-tbody">
-            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">Loading…</td></tr>
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">
+              <span class="ar-only">جاري التحميل…</span><span class="en-only">Loading…</span>
+            </td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-</div>
+</div><!-- /main -->
 
-<!-- ════════════════════ ADD/EDIT OFFER MODAL ════════════════════ -->
-<div id="modal-overlay" style="display:none;" onclick="if(event.target===this)closeModal()">
-  <div id="modal-box">
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-      <h3 id="modal-title" style="font-size:20px;font-weight:700;font-family:'Playfair Display',serif;">Add Offer</h3>
-      <button onclick="closeModal()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;">✕</button>
+<!-- PARTNER OFFER MODAL -->
+<div id="modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 class="modal-ttl" id="modal-title">Add Offer</h3>
+      <button class="modal-x" onclick="closeModal()">✕</button>
     </div>
-
     <form id="offer-form" onsubmit="saveOffer(event)">
       <input type="hidden" id="edit-id">
-
-      <!-- Company name -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+      <div class="field-row" style="grid-template-columns:1fr 1fr;">
         <div>
-          <label class="lbl">Company Name (English) *</label>
+          <label class="lbl"><span class="ar-only">اسم الشركة (إنجليزي) *</span><span class="en-only">Company Name (English) *</span></label>
           <input type="text" id="f-company-en" class="inp" placeholder="e.g. Keeta" required>
         </div>
         <div>
-          <label class="lbl">اسم الشركة (عربي)</label>
+          <label class="lbl"><span class="ar-only">اسم الشركة (عربي)</span><span class="en-only">Company Name (Arabic)</span></label>
           <input type="text" id="f-company-ar" class="inp" placeholder="مثال: كيتا" dir="rtl">
         </div>
       </div>
-
-      <!-- Offer text -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+      <div class="field-row" style="grid-template-columns:1fr 1fr;">
         <div>
-          <label class="lbl">Offer Description (English) *</label>
+          <label class="lbl"><span class="ar-only">وصف العرض (إنجليزي) *</span><span class="en-only">Offer Description (English) *</span></label>
           <input type="text" id="f-offer-en" class="inp" placeholder="e.g. 10% off all orders" required>
         </div>
         <div>
-          <label class="lbl">وصف العرض (عربي)</label>
-          <input type="text" id="f-offer-ar" class="inp" placeholder="مثال: خصم 10% على جميع الطلبات" dir="rtl">
+          <label class="lbl"><span class="ar-only">وصف العرض (عربي)</span><span class="en-only">Offer Description (Arabic)</span></label>
+          <input type="text" id="f-offer-ar" class="inp" placeholder="مثال: خصم 10%" dir="rtl">
         </div>
       </div>
-
-      <!-- Image URL -->
-      <div style="margin-bottom:18px;">
-        <label class="lbl">Offer Image URL <span style="color:var(--text-muted);font-weight:400;">— optional, paste a public image link</span></label>
-        <input type="url" id="f-image" class="inp" placeholder="https://i.imgur.com/... or any public image URL"
-               oninput="previewOfferImage()">
-        <div id="f-image-preview" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden;max-height:180px;border:1px solid rgba(255,255,255,0.08);">
-          <img id="f-image-preview-img" src="" alt="Preview" style="width:100%;object-fit:cover;display:block;"
-               onerror="document.getElementById('f-image-preview').style.display='none'">
+      <div class="field">
+        <label class="lbl">
+          <span class="ar-only">صورة العرض <span style="font-weight:400;color:var(--text-muted);">— اختياري، رابط صورة عام</span></span>
+          <span class="en-only">Offer Image URL <span style="font-weight:400;color:var(--text-muted);">— optional</span></span>
+        </label>
+        <input type="url" id="f-image" class="inp" placeholder="https://i.imgur.com/..." oninput="previewOfferImage()">
+        <div id="f-image-preview" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden;max-height:180px;border:1px solid rgba(255,255,255,.08);">
+          <img id="f-image-preview-img" src="" alt="Preview" style="width:100%;object-fit:cover;display:block;" onerror="document.getElementById('f-image-preview').style.display='none'">
         </div>
       </div>
-
-      <!-- Location Link -->
-      <div style="margin-bottom:18px;">
-        <label class="lbl">Location Link <span style="color:var(--text-muted);font-weight:400;">— optional, Google Maps or any URL</span></label>
+      <div class="field">
+        <label class="lbl">
+          <span class="ar-only">رابط الموقع <span style="font-weight:400;color:var(--text-muted);">— اختياري، Google Maps أو أي رابط</span></span>
+          <span class="en-only">Location Link <span style="font-weight:400;color:var(--text-muted);">— optional, Google Maps or any URL</span></span>
+        </label>
         <input type="url" id="f-location" class="inp" placeholder="https://maps.google.com/...">
-        <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">If provided, a "Show Location" button will appear on the offer card</div>
+        <div class="field-hint"><span class="ar-only">إذا أضفت رابطاً ظهر زر "عرض الموقع" في البطاقة</span><span class="en-only">If provided, a "Show Location" button appears on the offer card</span></div>
       </div>
-
-      <!-- Phone -->
-      <div style="margin-bottom:18px;">
-        <label class="lbl">Contact Phone Number</label>
+      <div class="field">
+        <label class="lbl"><span class="ar-only">رقم التواصل</span><span class="en-only">Contact Phone Number</span></label>
         <input type="tel" id="f-phone" class="inp" placeholder="+966 5X XXX XXXX">
       </div>
-
       <div class="gold-divider"></div>
-
-      <!-- Promo code -->
-      <div style="margin-bottom:18px;">
-        <label class="lbl">Promo Code</label>
+      <div class="field">
+        <label class="lbl"><span class="ar-only">كود الخصم</span><span class="en-only">Promo Code</span></label>
         <div style="display:flex;gap:10px;">
-          <input type="text" id="f-promo" class="inp" placeholder="e.g. ABAAD10 or leave blank"
-                 oninput="updatePromoPreview()" style="text-transform:uppercase;letter-spacing:0.05em;">
+          <input type="text" id="f-promo" class="inp" placeholder="e.g. ABAAD10" oninput="updatePromoPreview()" style="text-transform:uppercase;letter-spacing:.05em;">
           <button type="button" class="btn btn-ghost" style="white-space:nowrap;flex-shrink:0;" onclick="generateCode()">
-            Auto Generate
+            <span class="ar-only">توليد تلقائي</span><span class="en-only">Auto Generate</span>
           </button>
         </div>
         <div id="promo-preview" style="margin-top:10px;display:none;">
-          Preview: <span class="promo-preview" id="promo-preview-text"></span>
+          <span class="ar-only">معاينة: </span><span class="en-only">Preview: </span>
+          <span class="promo-preview-tag" id="promo-preview-text"></span>
         </div>
       </div>
-
-      <!-- Expiry -->
-      <div style="margin-bottom:18px;">
-        <label class="lbl">Offer Expiry</label>
+      <div class="field">
+        <label class="lbl"><span class="ar-only">انتهاء العرض</span><span class="en-only">Offer Expiry</span></label>
         <select id="f-expiry-preset" class="inp" onchange="handleExpiryChange()">
-          <option value="none">No expiry</option>
-          <option value="1w">1 Week</option>
-          <option value="2w">2 Weeks</option>
-          <option value="1m" selected>1 Month</option>
-          <option value="3m">3 Months</option>
-          <option value="6m">6 Months</option>
-          <option value="custom">Custom date…</option>
+          <option value="none"><span class="ar-only">بلا انتهاء</span><span class="en-only">No expiry</span></option>
+          <option value="1w">1 <span class="ar-only">أسبوع</span><span class="en-only">Week</span></option>
+          <option value="2w">2 <span class="ar-only">أسبوع</span><span class="en-only">Weeks</span></option>
+          <option value="1m" selected>1 <span class="ar-only">شهر</span><span class="en-only">Month</span></option>
+          <option value="3m">3 <span class="ar-only">أشهر</span><span class="en-only">Months</span></option>
+          <option value="6m">6 <span class="ar-only">أشهر</span><span class="en-only">Months</span></option>
+          <option value="custom"><span class="ar-only">تاريخ مخصص…</span><span class="en-only">Custom date…</span></option>
         </select>
         <input type="date" id="f-expiry-custom" class="inp" style="display:none;margin-top:10px;">
       </div>
-
-      <!-- Validity & Max Claims -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+      <div class="field-row" style="grid-template-columns:1fr 1fr;">
         <div>
-          <label class="lbl">Code Validity (days) *</label>
-          <input type="number" id="f-validity" class="inp" value="30" min="1" max="365" required placeholder="e.g. 30">
-          <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">How long each claimed code stays valid</div>
+          <label class="lbl"><span class="ar-only">صلاحية الكود (أيام) *</span><span class="en-only">Code Validity (days) *</span></label>
+          <input type="number" id="f-validity" class="inp" value="30" min="1" max="365" required>
+          <div class="field-hint"><span class="ar-only">مدة صلاحية الكود بعد المطالبة</span><span class="en-only">How long each claimed code stays valid</span></div>
         </div>
         <div>
-          <label class="lbl">Max Claims (0 = unlimited)</label>
-          <input type="number" id="f-max-claims" class="inp" value="0" min="0" placeholder="e.g. 10">
-          <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">Set a limit on how many people can claim</div>
+          <label class="lbl"><span class="ar-only">الحد الأقصى للمطالبات (0 = غير محدود)</span><span class="en-only">Max Claims (0 = unlimited)</span></label>
+          <input type="number" id="f-max-claims" class="inp" value="0" min="0">
+          <div class="field-hint"><span class="ar-only">حد عدد المطالبين بالكود</span><span class="en-only">Limit on how many people can claim</span></div>
         </div>
       </div>
-
-      <!-- Active toggle -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;margin-bottom:24px;">
-        <div>
-          <div style="font-size:14px;font-weight:500;">Show on landing page</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Offer will be visible to visitors immediately</div>
+      <div class="toggle-row">
+        <div class="toggle-row-label">
+          <div><span class="ar-only">عرض في الصفحة الرئيسية</span><span class="en-only">Show on landing page</span></div>
+          <div><span class="ar-only">سيظهر العرض للزوار فوراً</span><span class="en-only">Offer will be visible to visitors immediately</span></div>
         </div>
-        <label class="toggle">
-          <input type="checkbox" id="f-active" checked>
-          <span class="toggle-track"></span>
-        </label>
+        <label class="toggle"><input type="checkbox" id="f-active" checked><span class="toggle-track"></span></label>
       </div>
-
-      <div style="display:flex;gap:12px;">
-        <button type="button" class="btn btn-ghost" onclick="closeModal()" style="flex:1;">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="save-btn" style="flex:2;">Save Offer</button>
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button type="button" class="btn btn-ghost" onclick="closeModal()" style="flex:1;">
+          <span class="ar-only">إلغاء</span><span class="en-only">Cancel</span>
+        </button>
+        <button type="submit" class="btn btn-primary" id="save-btn" style="flex:2;">
+          <span class="ar-only">حفظ العرض</span><span class="en-only">Save Offer</span>
+        </button>
       </div>
     </form>
-
   </div>
 </div>
 
-<!-- ════════════════════ ABAAD OFFER MODAL ════════════════════ -->
-<div id="abaad-modal-overlay" style="display:none;" onclick="if(event.target===this)closeAbaadModal()">
-  <div id="abaad-modal-box">
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-      <h3 id="abaad-modal-title" style="font-size:20px;font-weight:700;font-family:'Playfair Display',serif;">Add Abaad Offer</h3>
-      <button onclick="closeAbaadModal()" style="background:rgba(255,255,255,0.07);border:none;color:var(--text);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;">✕</button>
+<!-- ABAAD OFFER MODAL -->
+<div id="abaad-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeAbaadModal()">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="modal-head">
+      <h3 class="modal-ttl" id="abaad-modal-title">Add Abaad Offer</h3>
+      <button class="modal-x" onclick="closeAbaadModal()">✕</button>
     </div>
-
     <form id="abaad-form" onsubmit="saveAbaadProduct(event)">
       <input type="hidden" id="abaad-edit-id">
-
-      <!-- Titles -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+      <div class="field-row" style="grid-template-columns:1fr 1fr;">
         <div>
-          <label class="lbl">عنوان العرض (عربي) *</label>
+          <label class="lbl"><span class="ar-only">عنوان العرض (عربي) *</span><span class="en-only">Offer Title (Arabic) *</span></label>
           <input type="text" id="af-title-ar" class="inp" placeholder="مثال: دورة اختبار القدرات" required dir="rtl">
         </div>
         <div>
-          <label class="lbl">Offer Title (English)</label>
+          <label class="lbl"><span class="ar-only">Offer Title (English)</span><span class="en-only">Offer Title (English)</span></label>
           <input type="text" id="af-title-en" class="inp" placeholder="e.g. Qudurat Prep Course">
         </div>
       </div>
-
-      <!-- Image URL -->
-      <div style="margin-bottom:18px;">
-        <label class="lbl">Image URL — paste a public image link</label>
-        <input type="url" id="af-image" class="inp" placeholder="https://drive.google.com/... or https://i.imgur.com/..."
-               oninput="previewAbaadImage()">
-        <div id="af-image-preview" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden;max-height:180px;border:1px solid rgba(255,255,255,0.08);">
-          <img id="af-image-preview-img" src="" alt="Preview" style="width:100%;object-fit:cover;display:block;"
-               onerror="document.getElementById('af-image-preview').style.display='none'">
+      <div class="field">
+        <label class="lbl"><span class="ar-only">رابط الصورة</span><span class="en-only">Image URL</span></label>
+        <input type="url" id="af-image" class="inp" placeholder="https://i.imgur.com/..." oninput="previewAbaadImage()">
+        <div id="af-image-preview" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden;max-height:180px;border:1px solid rgba(255,255,255,.08);">
+          <img id="af-image-preview-img" src="" alt="Preview" style="width:100%;object-fit:cover;display:block;" onerror="document.getElementById('af-image-preview').style.display='none'">
         </div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">
-          💡 For Google Drive: open the image → Share → Anyone with link → copy link, then replace <code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:3px;">uc?id=</code> format or use <a href="https://imgbb.com" target="_blank" style="color:var(--gold);">imgbb.com</a> to upload free.
+        <div class="field-hint">
+          <span class="ar-only">نصيحة: استخدم </span><span class="en-only">Tip: use </span>
+          <a href="https://imgbb.com" target="_blank" style="color:var(--gold);">imgbb.com</a>
+          <span class="ar-only"> لرفع الصور مجاناً</span><span class="en-only"> to host images for free</span>
         </div>
       </div>
-
       <div class="gold-divider"></div>
-
-      <!-- Description AR -->
-      <div style="margin-bottom:18px;">
-        <label class="lbl">الوصف التفصيلي (عربي) — يدعم التنسيق *</label>
-        <textarea id="af-desc-ar" class="inp" rows="9" dir="rtl"
-          placeholder="* السعر الحالي: 390 ريال فقط! 🎉&#10;* ~السعر الأساسي: 650 ريال~&#10;&#10;🎯 لماذا تسجل معنا؟&#10;* تفصيل:&#10;    * المدرب اللفظي: أ/ محمد الجبيلي 🗣️&#10;    * المدرب الكمي: أ/ سعيد الجاسم 📊&#10;&#10;📅 التاريخ: الأحد 31/05/2026م&#10;⏰ الساعة 4:00 إلى 8:00 مساءً."></textarea>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;">
-          <span>تنسيق:</span>
-          <code style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;">* نقطة رئيسية</code>
-          <code style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;">&nbsp;&nbsp;* نقطة فرعية</code>
-          <code style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;">~شطب~</code>
-          <code style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;">**غامق**</code>
+      <div class="field">
+        <label class="lbl"><span class="ar-only">الوصف التفصيلي (عربي) *</span><span class="en-only">Detailed Description (Arabic) *</span></label>
+        <textarea id="af-desc-ar" class="inp" rows="9" dir="rtl" placeholder="* السعر الحالي: 390 ريال&#10;* ~السعر الأساسي: 650 ريال~&#10;&#10;🎯 لماذا تسجل معنا؟"></textarea>
+        <div class="field-hint" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <code style="background:rgba(255,255,255,.07);padding:1px 6px;border-radius:4px;">* نقطة</code>
+          <code style="background:rgba(255,255,255,.07);padding:1px 6px;border-radius:4px;">~شطب~</code>
+          <code style="background:rgba(255,255,255,.07);padding:1px 6px;border-radius:4px;">**غامق**</code>
         </div>
       </div>
-
-      <!-- Description EN -->
-      <div style="margin-bottom:18px;">
-        <label class="lbl">Description (English) — optional</label>
-        <textarea id="af-desc-en" class="inp" rows="5"
-          placeholder="* Current price: 390 SAR only! 🎉&#10;* ~Original: 650 SAR~&#10;&#10;Details:&#10;    * Instructor 1&#10;    * Instructor 2"></textarea>
+      <div class="field">
+        <label class="lbl"><span class="ar-only">الوصف (إنجليزي) — اختياري</span><span class="en-only">Description (English) — optional</span></label>
+        <textarea id="af-desc-en" class="inp" rows="5" placeholder="* Current price: 390 SAR&#10;* ~Original: 650 SAR~"></textarea>
       </div>
-
       <div class="gold-divider"></div>
-
-      <!-- Pricing -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+      <div class="field-row" style="grid-template-columns:1fr 1fr;">
         <div>
-          <label class="lbl">New / Offer Price (SAR) *</label>
+          <label class="lbl"><span class="ar-only">السعر الجديد (ريال) *</span><span class="en-only">New / Offer Price (SAR) *</span></label>
           <input type="number" id="af-new-price" class="inp" placeholder="390" min="0" step="0.01" required>
         </div>
         <div>
-          <label class="lbl">Original Price (SAR) — shown with strikethrough</label>
+          <label class="lbl"><span class="ar-only">السعر الأصلي (ريال) — مشطوب</span><span class="en-only">Original Price (SAR) — strikethrough</span></label>
           <input type="number" id="af-old-price" class="inp" placeholder="650" min="0" step="0.01">
         </div>
       </div>
-
-      <!-- Signup link -->
-      <div style="margin-bottom:18px;">
-        <label class="lbl">Registration Link *</label>
-        <input type="url" id="af-link" class="inp" placeholder="https://shorturl.at/OSTtk" required>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">Visitors are redirected here after entering name & phone</div>
+      <div class="field">
+        <label class="lbl"><span class="ar-only">رابط التسجيل *</span><span class="en-only">Registration Link *</span></label>
+        <input type="url" id="af-link" class="inp" placeholder="https://..." required>
+        <div class="field-hint"><span class="ar-only">يتم توجيه الزائر هنا بعد إدخال بياناته</span><span class="en-only">Visitors are redirected here after entering their details</span></div>
       </div>
-
-      <!-- Active toggle -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;margin-bottom:24px;">
-        <div>
-          <div style="font-size:14px;font-weight:500;">Show on landing page</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Offer visible to visitors immediately</div>
+      <div class="toggle-row">
+        <div class="toggle-row-label">
+          <div><span class="ar-only">عرض في الصفحة الرئيسية</span><span class="en-only">Show on landing page</span></div>
+          <div><span class="ar-only">سيظهر للزوار فوراً</span><span class="en-only">Offer visible to visitors immediately</span></div>
         </div>
-        <label class="toggle">
-          <input type="checkbox" id="af-active" checked>
-          <span class="toggle-track"></span>
-        </label>
+        <label class="toggle"><input type="checkbox" id="af-active" checked><span class="toggle-track"></span></label>
       </div>
-
-      <div style="display:flex;gap:12px;">
-        <button type="button" class="btn btn-ghost" onclick="closeAbaadModal()" style="flex:1;">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="abaad-save-btn" style="flex:2;">Save Offer</button>
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button type="button" class="btn btn-ghost" onclick="closeAbaadModal()" style="flex:1;">
+          <span class="ar-only">إلغاء</span><span class="en-only">Cancel</span>
+        </button>
+        <button type="submit" class="btn btn-primary" id="abaad-save-btn" style="flex:2;">
+          <span class="ar-only">حفظ العرض</span><span class="en-only">Save Offer</span>
+        </button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
-
-<!-- ════════════════════════════ JS ════════════════════════════ -->
 <script>
-
-// ─────────── FIREBASE CONFIG ───────────
-// 🔥 Paste SAME Firebase config as index.html
+// ── FIREBASE ──
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyBMil1i4ba4gIzpV4PGOUDZrPh5vWH3riI",
   authDomain:        "abaad-39b3c.firebaseapp.com",
@@ -825,15 +829,39 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "750678331728",
   appId:             "1:750678331728:web:c3f4c7c5c678d87da51c55"
 };
-
 firebase.initializeApp(FIREBASE_CONFIG);
 const db = firebase.firestore();
 
-// ─────────── ADMIN PASSWORD ───────────
-// ⚙️  Change this to your desired admin password
+// ── PASSWORD ──
 const ADMIN_PASS = "Lordiey";
 
-// ─────────── LOGIN ───────────
+// ── LANGUAGE ──
+let adminLang = localStorage.getItem('abaad_admin_lang') || 'en';
+applyAdminLang();
+
+function applyAdminLang() {
+  document.getElementById('admin-root').setAttribute('lang', adminLang);
+  localStorage.setItem('abaad_admin_lang', adminLang);
+}
+
+function toggleAdminLang() {
+  adminLang = adminLang === 'en' ? 'ar' : 'en';
+  applyAdminLang();
+  // Refresh topbar title for current tab
+  const cur = ['offers','leads','claims','abaad','inquiries'].find(t =>
+    document.getElementById('tab-'+t) &&
+    document.getElementById('tab-'+t).style.display !== 'none'
+  ) || 'offers';
+  setTabMeta(cur);
+  // Re-render tables so language-sensitive content updates
+  renderOffersTable();
+  renderLeadsTable();
+  renderClaimsTable();
+  renderAbaadTable();
+  renderInquiriesTable();
+}
+
+// ── LOGIN ──
 function doLogin() {
   const val = document.getElementById('pw-input').value;
   if (val === ADMIN_PASS) {
@@ -841,11 +869,7 @@ function doLogin() {
     document.getElementById('sidebar').style.display = 'flex';
     document.getElementById('main').style.display = 'block';
     sessionStorage.setItem('abaad_admin', '1');
-    loadOffers();
-    loadLeads();
-    loadClaims();
-    loadAbaadProducts();
-    loadInquiries();
+    loadOffers(); loadLeads(); loadClaims(); loadAbaadProducts(); loadInquiries();
   } else {
     document.getElementById('login-err').style.display = 'block';
     document.getElementById('pw-input').focus();
@@ -857,49 +881,70 @@ function doLogout() {
   location.reload();
 }
 
-// Auto-login if session exists
 if (sessionStorage.getItem('abaad_admin') === '1') {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('sidebar').style.display = 'flex';
   document.getElementById('main').style.display = 'block';
-  loadOffers();
-  loadLeads();
-  loadClaims();
-  loadAbaadProducts();
+  loadOffers(); loadLeads(); loadClaims(); loadAbaadProducts(); loadInquiries();
 }
 
-// ─────────── TABS ───────────
+// ── TABS ──
+const TAB_META = {
+  offers:    { en: ['Partner Offers',   'Manage partner deals shown on the landing page'],
+               ar: ['عروض الشركاء',     'إدارة عروض الشركاء الظاهرة في الصفحة الرئيسية'] },
+  leads:     { en: ['Visitor Leads',    'People who submitted their details on the landing page'],
+               ar: ['بيانات الزوار',    'الزوار الذين أرسلوا بياناتهم عبر الصفحة الرئيسية'] },
+  claims:    { en: ['Claimed Codes',    'All codes claimed by visitors — mark as used when redeemed'],
+               ar: ['الكودات المطالب بها', 'جميع الكودات — علّمها مستخدمة بعد الاسترداد'] },
+  abaad:     { en: ['Abaad Offers',     'Manage exclusive Abaad programs with image, price and signup link'],
+               ar: ['عروض أبعاد',       'إدارة برامج أبعاد الحصرية'] },
+  inquiries: { en: ['Office Inquiries', 'Visitors who expressed interest in your offices'],
+               ar: ['استفسارات المكاتب','الزوار الذين أبدوا اهتمامهم بمكاتبكم'] },
+};
+
+function setTabMeta(tab) {
+  const m = (TAB_META[tab][adminLang] || TAB_META[tab]['en']);
+  document.getElementById('page-title').textContent = m[0];
+  document.getElementById('page-sub').textContent   = m[1];
+}
+
 function showTab(tab) {
   ['offers','leads','claims','abaad','inquiries'].forEach(t => {
     document.getElementById('tab-'+t).style.display = t === tab ? 'block' : 'none';
     document.getElementById('nav-'+t).classList.toggle('active', t === tab);
   });
-  const titles = {
-    offers: ['Partner Offers',   'Manage partner deals shown on the landing page'],
-    leads:  ['Visitor Leads',    'People who submitted their details on the landing page'],
-    claims:     ['Claimed Codes',     'All codes claimed by visitors — mark as used when redeemed'],
-    abaad:      ['Abaad Offers',      'Manage exclusive Abaad programs with image, price and signup link'],
-    inquiries:  ['Office Inquiries',  'Visitors who expressed interest in your offices — contact them with tailored offers'],
-  };
-  document.getElementById('page-title').textContent = titles[tab][0];
-  document.getElementById('page-sub').textContent   = titles[tab][1];
+  setTabMeta(tab);
   if (tab === 'abaad') updateAbaadStats();
   if (tab === 'inquiries') updateInquiryStats();
 }
 
-// ─────────── OFFERS ───────────
+// ── HELPERS ──
+function getTs(v) {
+  if (!v) return Infinity;
+  return v.toDate ? v.toDate().getTime() : new Date(v).getTime();
+}
+
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.className = type; }, 3500);
+}
+
+function t(ar, en) { return adminLang === 'ar' ? ar : en; }
+
+// ── OFFERS ──
 let allOffers = [];
 
 function loadOffers() {
   db.collection('offers').orderBy('createdAt', 'desc').onSnapshot(snap => {
     allOffers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderOffersTable();
-    updateStats();
+    renderOffersTable(); updateStats();
   }, () => {
     db.collection('offers').onSnapshot(snap => {
       allOffers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderOffersTable();
-      updateStats();
+      renderOffersTable(); updateStats();
     });
   });
 }
@@ -907,87 +952,76 @@ function loadOffers() {
 function updateStats() {
   const now = Date.now();
   const active   = allOffers.filter(o => o.active && (!o.expiryDate || getTs(o.expiryDate) > now));
-  const expiring = allOffers.filter(o => o.active && o.expiryDate && (getTs(o.expiryDate) - now) < 7 * 864e5 && getTs(o.expiryDate) > now);
+  const expiring = allOffers.filter(o => o.active && o.expiryDate && (getTs(o.expiryDate) - now) < 7*864e5 && getTs(o.expiryDate) > now);
   document.getElementById('stat-active').textContent   = active.length;
   document.getElementById('stat-total').textContent    = allOffers.length;
   document.getElementById('stat-expiring').textContent = expiring.length;
 }
 
-function getTs(v) {
-  if (!v) return Infinity;
-  return v.toDate ? v.toDate().getTime() : new Date(v).getTime();
-}
-
 function renderOffersTable() {
   const tbody = document.getElementById('offers-tbody');
-  if (allOffers.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">No offers yet — click "Add Offer" to get started.</td></tr>`;
+  if (!tbody) return;
+  if (!allOffers.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">${t('لا توجد عروض — اضغط "إضافة عرض"','No offers yet — click "Add Offer" to get started.')}</td></tr>`;
     return;
   }
   tbody.innerHTML = allOffers.map(o => {
-    const now    = Date.now();
-    const expTs  = getTs(o.expiryDate);
+    const now   = Date.now();
+    const expTs = getTs(o.expiryDate);
     const expired = expTs < now;
     const expText = o.expiryDate
-      ? (expired ? 'Expired' : new Date(expTs).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}))
+      ? (expired ? t('منتهي','Expired') : new Date(expTs).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}))
       : '—';
     const statusBadge = (!o.active || expired)
-      ? `<span class="badge badge-red"><span style="width:5px;height:5px;background:currentColor;border-radius:50%;display:inline-block;"></span>Inactive</span>`
-      : `<span class="badge badge-green"><span style="width:5px;height:5px;background:currentColor;border-radius:50%;display:inline-block;"></span>Live</span>`;
+      ? `<span class="badge badge-red"><span class="badge-dot"></span>${t('معطّل','Inactive')}</span>`
+      : `<span class="badge badge-green"><span class="badge-dot"></span>${t('نشط','Live')}</span>`;
     const promoCell = o.promoCode
-      ? `<span style="font-family:'Courier New',monospace;font-size:12px;font-weight:700;color:var(--gold-light);background:rgba(200,169,81,0.09);border:1px dashed rgba(200,169,81,0.3);border-radius:5px;padding:3px 9px;">${o.promoCode}</span>`
+      ? `<span style="font-family:'Courier New',monospace;font-size:12px;font-weight:700;color:var(--gold-l);background:rgba(200,169,81,.09);border:1px dashed rgba(200,169,81,.3);border-radius:5px;padding:3px 9px;">${o.promoCode}</span>`
       : `<span style="color:var(--text-muted);">—</span>`;
-
+    const name = adminLang === 'ar' ? (o.companyNameAr || o.companyName || '') : (o.companyName || '');
+    const nameSecondary = adminLang === 'ar' ? '' : (o.companyNameAr ? `<div style="font-size:11px;color:var(--text-muted);">${o.companyNameAr}</div>` : '');
     return `<tr>
-      <td>
-        <div style="font-weight:600;">${o.companyName}</div>
-        ${o.companyNameAr ? `<div style="font-size:11px;color:var(--text-muted);direction:rtl;text-align:right;">${o.companyNameAr}</div>` : ''}
-      </td>
-      <td>
-        <div style="max-width:200px;white-space:normal;line-height:1.45;">${o.offerText}</div>
-      </td>
+      <td><div style="font-weight:600;">${name}</div>${nameSecondary}</td>
+      <td><div style="max-width:200px;white-space:normal;line-height:1.4;">${adminLang==='ar'?(o.offerTextAr||o.offerText||''):(o.offerText||'')}</div></td>
       <td>${promoCell}</td>
       <td style="font-size:13px;color:${expired?'var(--red)':'var(--text-muted)'};">${expText}</td>
       <td>${statusBadge}</td>
-      <td>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-ghost btn-sm" onclick="editOffer('${o.id}')">Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteOffer('${o.id}','${o.companyName}')">Delete</button>
-        </div>
-      </td>
+      <td><div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="editOffer('${o.id}')">${t('تعديل','Edit')}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteOffer('${o.id}','${(o.companyName||'').replace(/'/g,"\\'")}')">
+          ${t('حذف','Delete')}
+        </button>
+      </div></td>
     </tr>`;
   }).join('');
 }
 
-// ─────────── MODAL ───────────
+// ── OFFER MODAL ──
 let editingId = null;
 
 function openModal(id) {
   editingId = id || null;
-  document.getElementById('modal-title').textContent = id ? 'Edit Offer' : 'Add Offer';
-  document.getElementById('save-btn').textContent     = id ? 'Update Offer' : 'Save Offer';
-
+  document.getElementById('modal-title').textContent = id ? t('تعديل العرض','Edit Offer') : t('إضافة عرض','Add Offer');
+  document.getElementById('save-btn').querySelector('.ar-only').textContent = id ? 'تحديث العرض' : 'حفظ العرض';
+  document.getElementById('save-btn').querySelector('.en-only').textContent = id ? 'Update Offer' : 'Save Offer';
   if (id) {
     const o = allOffers.find(x => x.id === id);
     if (!o) return;
-    document.getElementById('f-company-en').value  = o.companyName    || '';
-    document.getElementById('f-company-ar').value  = o.companyNameAr  || '';
-    document.getElementById('f-offer-en').value    = o.offerText      || '';
-    document.getElementById('f-offer-ar').value    = o.offerTextAr    || '';
-    document.getElementById('f-image').value       = o.imageUrl       || '';
-    document.getElementById('f-location').value    = o.locationLink   || '';
-    document.getElementById('f-phone').value       = o.phone          || '';
-    document.getElementById('f-promo').value       = o.promoCode      || '';
-    document.getElementById('f-validity').value    = o.validityDays   || 30;
-    document.getElementById('f-max-claims').value  = o.maxClaims      || 0;
+    document.getElementById('f-company-en').value = o.companyName   || '';
+    document.getElementById('f-company-ar').value = o.companyNameAr || '';
+    document.getElementById('f-offer-en').value   = o.offerText     || '';
+    document.getElementById('f-offer-ar').value   = o.offerTextAr   || '';
+    document.getElementById('f-image').value      = o.imageUrl      || '';
+    document.getElementById('f-location').value   = o.locationLink  || '';
+    document.getElementById('f-phone').value      = o.phone         || '';
+    document.getElementById('f-promo').value      = o.promoCode     || '';
+    document.getElementById('f-validity').value   = o.validityDays  || 30;
+    document.getElementById('f-max-claims').value = o.maxClaims     || 0;
     document.getElementById('f-active').checked   = !!o.active;
-    previewOfferImage();
-    updatePromoPreview();
-
+    previewOfferImage(); updatePromoPreview();
     if (o.expiryDate) {
-      const d = new Date(getTs(o.expiryDate));
       document.getElementById('f-expiry-preset').value = 'custom';
-      document.getElementById('f-expiry-custom').value = d.toISOString().split('T')[0];
+      document.getElementById('f-expiry-custom').value = new Date(getTs(o.expiryDate)).toISOString().split('T')[0];
       document.getElementById('f-expiry-custom').style.display = 'block';
     } else {
       document.getElementById('f-expiry-preset').value = 'none';
@@ -1001,7 +1035,6 @@ function openModal(id) {
     document.getElementById('promo-preview').style.display = 'none';
     document.getElementById('f-image-preview').style.display = 'none';
   }
-
   document.getElementById('modal-overlay').style.display = 'flex';
   setTimeout(() => document.getElementById('f-company-en').focus(), 60);
 }
@@ -1017,8 +1050,6 @@ async function saveOffer(e) {
   e.preventDefault();
   const btn = document.getElementById('save-btn');
   btn.disabled = true;
-  btn.textContent = 'Saving…';
-
   const preset = document.getElementById('f-expiry-preset').value;
   let expiryDate = null;
   if (preset !== 'none') {
@@ -1027,12 +1058,11 @@ async function saveOffer(e) {
       const v = document.getElementById('f-expiry-custom').value;
       expiryDate = v ? firebase.firestore.Timestamp.fromDate(new Date(v)) : null;
     } else {
-      const days = { '1w':7, '2w':14, '1m':30, '3m':90, '6m':180 }[preset] || 30;
+      const days = {'1w':7,'2w':14,'1m':30,'3m':90,'6m':180}[preset] || 30;
       now.setDate(now.getDate() + days);
       expiryDate = firebase.firestore.Timestamp.fromDate(now);
     }
   }
-
   const data = {
     companyName:   document.getElementById('f-company-en').value.trim(),
     companyNameAr: document.getElementById('f-company-ar').value.trim(),
@@ -1042,41 +1072,36 @@ async function saveOffer(e) {
     locationLink:  document.getElementById('f-location').value.trim(),
     phone:         document.getElementById('f-phone').value.trim(),
     promoCode:     document.getElementById('f-promo').value.trim().toUpperCase(),
-    validityDays:  parseInt(document.getElementById('f-validity').value)   || 30,
+    validityDays:  parseInt(document.getElementById('f-validity').value) || 30,
     maxClaims:     parseInt(document.getElementById('f-max-claims').value) || 0,
     active:        document.getElementById('f-active').checked,
     expiryDate,
   };
-
   try {
     if (editingId) {
       await db.collection('offers').doc(editingId).update(data);
-      toast('Offer updated!', 'success');
+      toast(t('تم تحديث العرض!','Offer updated!'), 'success');
     } else {
       data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       await db.collection('offers').add(data);
-      toast('Offer added and live on landing page!', 'success');
+      toast(t('تم إضافة العرض وهو الآن مرئي!','Offer added and live on landing page!'), 'success');
     }
     closeModal();
   } catch (err) {
-    console.error(err);
-    toast('Error saving offer: ' + err.message, 'error');
+    toast(t('خطأ: ','Error: ') + err.message, 'error');
   }
   btn.disabled = false;
-  btn.textContent = editingId ? 'Update Offer' : 'Save Offer';
 }
 
 async function deleteOffer(id, name) {
-  if (!confirm(`Delete the offer for "${name}"? This cannot be undone.`)) return;
+  if (!confirm(t(`حذف عرض "${name}"? لا يمكن التراجع.`, `Delete the offer for "${name}"? This cannot be undone.`))) return;
   try {
     await db.collection('offers').doc(id).delete();
-    toast(`"${name}" offer deleted.`, 'success');
-  } catch (err) {
-    toast('Delete failed: ' + err.message, 'error');
-  }
+    toast(t('تم حذف العرض.','Offer deleted.'), 'success');
+  } catch (err) { toast(t('فشل الحذف: ','Delete failed: ') + err.message, 'error'); }
 }
 
-// ─────────── PROMO CODE ───────────
+// ── PROMO ──
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = 'ABAAD-';
@@ -1088,12 +1113,8 @@ function generateCode() {
 function updatePromoPreview() {
   const v = document.getElementById('f-promo').value.trim().toUpperCase();
   const p = document.getElementById('promo-preview');
-  if (v) {
-    document.getElementById('promo-preview-text').textContent = v;
-    p.style.display = 'block';
-  } else {
-    p.style.display = 'none';
-  }
+  if (v) { document.getElementById('promo-preview-text').textContent = v; p.style.display = 'block'; }
+  else { p.style.display = 'none'; }
 }
 
 function handleExpiryChange() {
@@ -1105,19 +1126,25 @@ function handleExpiryChange() {
   }
 }
 
-// ─────────── LEADS ───────────
+function previewOfferImage() {
+  const url = document.getElementById('f-image').value.trim();
+  const preview = document.getElementById('f-image-preview');
+  const img = document.getElementById('f-image-preview-img');
+  if (url) { img.src = url; preview.style.display = 'block'; }
+  else { preview.style.display = 'none'; }
+}
+
+// ── LEADS ──
 let allLeads = [];
 
 function loadLeads() {
   db.collection('leads').orderBy('timestamp', 'desc').onSnapshot(snap => {
     allLeads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderLeadsTable();
-    updateLeadStats();
+    renderLeadsTable(); updateLeadStats();
   }, () => {
     db.collection('leads').onSnapshot(snap => {
       allLeads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderLeadsTable();
-      updateLeadStats();
+      renderLeadsTable(); updateLeadStats();
     });
   });
 }
@@ -1131,32 +1158,30 @@ function updateLeadStats() {
   });
   document.getElementById('stat-leads').textContent       = allLeads.length;
   document.getElementById('stat-leads-month').textContent = thisMonth.length;
-  // Also refresh abaad registrations count if that stat card exists
   const elRegs = document.getElementById('stat-abaad-regs');
   if (elRegs) elRegs.textContent = allLeads.filter(l => l.source === 'abaad_product').length;
 }
 
 function renderLeadsTable() {
   const tbody = document.getElementById('leads-tbody');
-  if (allLeads.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">No leads yet — share your landing page to start collecting visitors.</td></tr>`;
+  if (!tbody) return;
+  if (!allLeads.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">${t('لا يوجد زوار بعد — شارك الصفحة الرئيسية','No leads yet — share your landing page to start collecting visitors.')}</td></tr>`;
     return;
   }
   tbody.innerHTML = allLeads.map((l, i) => {
     const ts = l.timestamp ? (l.timestamp.toDate ? l.timestamp.toDate() : new Date(l.timestamp)) : null;
-    const dateStr = ts ? ts.toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    const dateStr = ts ? ts.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
     const langBadge = l.lang === 'ar'
       ? `<span class="badge badge-gold">العربية</span>`
-      : `<span class="badge" style="background:rgba(100,180,255,0.1);color:#80c4ff;border:1px solid rgba(100,180,255,0.2);">English</span>`;
+      : `<span class="badge badge-blue">English</span>`;
     const srcBadge = l.source === 'abaad_product'
-      ? `<div><span class="badge" style="background:rgba(200,169,81,0.12);color:var(--gold);border:1px solid rgba(200,169,81,0.25);">Abaad Offer</span>${l.productTitle ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;max-width:130px;white-space:normal;">${l.productTitle}</div>` : ''}</div>`
-      : `<span class="badge" style="background:rgba(80,180,120,0.10);color:#4ade80;border:1px solid rgba(80,180,120,0.22);">Partner Claim</span>`;
+      ? `<span class="badge badge-gold">${t('عرض أبعاد','Abaad Offer')}</span>${l.productTitle?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px;max-width:130px;">${l.productTitle}</div>`:''}`
+      : `<span class="badge badge-green">${t('عرض شريك','Partner Claim')}</span>`;
     return `<tr>
       <td style="color:var(--text-muted);font-size:13px;">${allLeads.length - i}</td>
       <td style="font-weight:500;">${l.name || '—'}</td>
-      <td>
-        <a href="tel:${l.phone}" style="color:var(--gold);text-decoration:none;font-size:14px;">${l.phone || '—'}</a>
-      </td>
+      <td><a href="tel:${l.phone}" style="color:var(--gold);text-decoration:none;">${l.phone || '—'}</a></td>
       <td>${srcBadge}</td>
       <td>${langBadge}</td>
       <td style="font-size:12px;color:var(--text-muted);">${dateStr}</td>
@@ -1165,244 +1190,201 @@ function renderLeadsTable() {
 }
 
 async function clearAllLeads() {
-  if (allLeads.length === 0) { toast('No leads to clear.', 'error'); return; }
-  if (!confirm(`Delete ALL ${allLeads.length} visitor leads? This cannot be undone.`)) return;
+  if (!allLeads.length) { toast(t('لا يوجد زوار','No leads to clear.'), 'error'); return; }
+  if (!confirm(t(`حذف جميع ${allLeads.length} سجل؟ لا يمكن التراجع.`,`Delete ALL ${allLeads.length} visitor leads? This cannot be undone.`))) return;
   try {
-    // Firestore batch deletes in chunks of 500
     for (let i = 0; i < allLeads.length; i += 500) {
       const batch = db.batch();
-      allLeads.slice(i, i + 500).forEach(l => batch.delete(db.collection('leads').doc(l.id)));
+      allLeads.slice(i, i+500).forEach(l => batch.delete(db.collection('leads').doc(l.id)));
       await batch.commit();
     }
-    toast('All leads cleared!', 'success');
-  } catch(err) {
-    toast('Error: ' + err.message, 'error');
-  }
+    toast(t('تم حذف جميع السجلات!','All leads cleared!'), 'success');
+  } catch(err) { toast('Error: ' + err.message, 'error'); }
 }
 
 function exportCSV() {
-  if (allLeads.length === 0) { toast('No leads to export.', 'error'); return; }
+  if (!allLeads.length) { toast(t('لا يوجد بيانات','No leads to export.'), 'error'); return; }
   const rows = [['#','Name','Phone','Language','Date']];
   allLeads.forEach((l, i) => {
     const ts = l.timestamp ? (l.timestamp.toDate ? l.timestamp.toDate() : new Date(l.timestamp)) : null;
-    rows.push([
-      allLeads.length - i,
-      l.name || '',
-      l.phone || '',
-      l.lang === 'ar' ? 'Arabic' : 'English',
-      ts ? ts.toLocaleString('en-GB') : ''
-    ]);
+    rows.push([allLeads.length-i, l.name||'', l.phone||'', l.lang==='ar'?'Arabic':'English', ts?ts.toLocaleString('en-GB'):'']);
   });
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('﻿' + csv);
   a.download = `abaad-leads-${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
-  toast(`Exported ${allLeads.length} leads.`, 'success');
+  toast(t(`تم تصدير ${allLeads.length} سجل`,`Exported ${allLeads.length} leads.`), 'success');
 }
 
-// ─────────── CLAIMS ───────────
+// ── CLAIMED CODES ──
 let allClaims = [];
 
 function loadClaims() {
-  db.collection('claims').orderBy('claimedAt', 'desc').onSnapshot(snap => {
+  db.collection('claimed_codes').orderBy('claimedAt', 'desc').onSnapshot(snap => {
     allClaims = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderClaimsTable();
-    updateClaimStats();
+    renderClaimsTable(); updateClaimStats();
   }, () => {
-    db.collection('claims').onSnapshot(snap => {
+    db.collection('claimed_codes').onSnapshot(snap => {
       allClaims = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderClaimsTable();
-      updateClaimStats();
+      renderClaimsTable(); updateClaimStats();
     });
   });
 }
 
 function updateClaimStats() {
-  const total     = allClaims.length;
-  const active    = allClaims.filter(c => c.status === 'active').length;
-  const used      = allClaims.filter(c => c.status === 'used').length;
-  const cancelled = allClaims.filter(c => c.status === 'cancelled').length;
-  document.getElementById('stat-claims-total').textContent     = total;
-  document.getElementById('stat-claims-active').textContent    = active;
-  document.getElementById('stat-claims-used').textContent      = used;
-  document.getElementById('stat-claims-cancelled').textContent = cancelled;
+  document.getElementById('stat-claims-total').textContent     = allClaims.length;
+  document.getElementById('stat-claims-active').textContent    = allClaims.filter(c => c.status === 'active').length;
+  document.getElementById('stat-claims-used').textContent      = allClaims.filter(c => c.status === 'used').length;
+  document.getElementById('stat-claims-cancelled').textContent = allClaims.filter(c => c.status === 'cancelled').length;
 }
 
 function renderClaimsTable() {
   const tbody = document.getElementById('claims-tbody');
   if (!tbody) return;
-  if (allClaims.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">No codes claimed yet.</td></tr>`;
+  if (!allClaims.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">${t('لا توجد كودات بعد.','No codes claimed yet.')}</td></tr>`;
     return;
   }
   tbody.innerHTML = allClaims.map(c => {
-    const expTs   = c.expiresAt ? getTs(c.expiresAt) : null;
+    const expTs  = c.expiresAt ? getTs(c.expiresAt) : null;
     const expired = expTs && expTs < Date.now();
-    const expStr  = expTs ? new Date(expTs).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-
+    const expStr = expTs ? new Date(expTs).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
     const statusMap = {
-      active:    `<span class="badge badge-green">Active</span>`,
-      used:      `<span class="badge badge-gold">Used ✓</span>`,
-      cancelled: `<span class="badge" style="background:rgba(255,255,255,0.06);color:var(--text-muted);border:1px solid rgba(255,255,255,0.10);">Cancelled</span>`,
+      active:    `<span class="badge badge-green">${t('نشط','Active')}</span>`,
+      used:      `<span class="badge badge-gold">${t('مستخدم ✓','Used ✓')}</span>`,
+      cancelled: `<span class="badge" style="background:rgba(255,255,255,.06);color:var(--text-muted);border:1px solid rgba(255,255,255,.1);">${t('ملغي','Cancelled')}</span>`,
     };
-    const statusBadge = expired && c.status === 'active'
-      ? `<span class="badge badge-red">Expired</span>`
+    const statusBadge = expired && c.status==='active'
+      ? `<span class="badge badge-red">${t('منتهي','Expired')}</span>`
       : (statusMap[c.status] || statusMap.active);
-
-    const markUsedBtn = c.status === 'active' && !expired
-      ? `<button class="btn btn-ghost btn-sm" onclick="markUsed('${c.id}')" style="white-space:nowrap;">Mark Used ✓</button>`
+    const markBtn = c.status==='active' && !expired
+      ? `<button class="btn btn-ghost btn-sm" onclick="markUsed('${c.id}')">${t('تعليم مستخدم ✓','Mark Used ✓')}</button>`
       : `<span style="color:var(--text-muted);font-size:12px;">—</span>`;
-
     return `<tr>
-      <td><span style="font-family:'Courier New',monospace;font-size:13px;font-weight:700;color:var(--gold-light);background:rgba(200,169,81,0.09);border:1px dashed rgba(200,169,81,0.3);border-radius:5px;padding:3px 9px;">${c.code}</span></td>
-      <td style="font-weight:500;">${c.visitorName || '—'}</td>
-      <td><a href="tel:${c.visitorPhone}" style="color:var(--gold);text-decoration:none;">${c.visitorPhone || '—'}</a></td>
-      <td style="max-width:160px;white-space:normal;font-size:13px;">${c.companyName || '—'}</td>
+      <td><span style="font-family:'Courier New',monospace;font-size:13px;font-weight:700;color:var(--gold-l);background:rgba(200,169,81,.09);border:1px dashed rgba(200,169,81,.3);border-radius:5px;padding:3px 9px;">${c.code}</span></td>
+      <td style="font-weight:500;">${c.visitorName||'—'}</td>
+      <td><a href="tel:${c.visitorPhone}" style="color:var(--gold);text-decoration:none;">${c.visitorPhone||'—'}</a></td>
+      <td style="max-width:150px;white-space:normal;font-size:13px;">${c.companyName||'—'}</td>
       <td style="font-size:12px;color:${expired?'var(--red)':'var(--text-muted)'};">${expStr}</td>
       <td>${statusBadge}</td>
-      <td>${markUsedBtn}</td>
+      <td>${markBtn}</td>
     </tr>`;
   }).join('');
 }
 
 async function markUsed(claimId) {
   try {
-    await db.collection('claims').doc(claimId).update({ status: 'used', usedAt: firebase.firestore.FieldValue.serverTimestamp() });
-    toast('Code marked as used!', 'success');
-  } catch(err) {
-    toast('Error: ' + err.message, 'error');
-  }
+    await db.collection('claimed_codes').doc(claimId).update({ status:'used', usedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    toast(t('تم تعليم الكود مستخدماً!','Code marked as used!'), 'success');
+  } catch(err) { toast('Error: ' + err.message, 'error'); }
 }
 
 function exportClaimsCSV() {
-  if (allClaims.length === 0) { toast('No claims to export.', 'error'); return; }
+  if (!allClaims.length) { toast(t('لا يوجد كودات','No claims to export.'), 'error'); return; }
   const rows = [['Code','Visitor','Phone','Company','Offer','Status','Valid Until','Claimed At']];
   allClaims.forEach(c => {
-    const exp = c.expiresAt ? new Date(getTs(c.expiresAt)).toLocaleString('en-GB') : '';
-    const claimedAt = c.claimedAt ? new Date(getTs(c.claimedAt)).toLocaleString('en-GB') : '';
-    rows.push([c.code||'',c.visitorName||'',c.visitorPhone||'',c.companyName||'',c.offerText||'',c.status||'',exp,claimedAt]);
+    rows.push([c.code||'',c.visitorName||'',c.visitorPhone||'',c.companyName||'',c.offerTitle||'',c.status||'',
+      c.expiresAt ? new Date(getTs(c.expiresAt)).toLocaleString('en-GB') : '',
+      c.claimedAt ? new Date(getTs(c.claimedAt)).toLocaleString('en-GB') : '']);
   });
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('﻿' + csv);
   a.download = `abaad-claims-${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
-  toast(`Exported ${allClaims.length} claims.`, 'success');
+  toast(t(`تم تصدير ${allClaims.length} كود`,`Exported ${allClaims.length} claims.`), 'success');
 }
 
-// ─────────── TOAST ───────────
-function toast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `show ${type}`;
-  clearTimeout(t._t);
-  t._t = setTimeout(() => { t.className = type; }, 3500);
-}
-
-// ─────────── GOLD TEXT ───────────
-// Inline since Tailwind @apply not available without build
-document.querySelectorAll('.gold-text').forEach(el => {
-  el.style.background = 'linear-gradient(135deg, #C8A951, #F0D98A)';
-  el.style.webkitBackgroundClip = 'text';
-  el.style.webkitTextFillColor = 'transparent';
-  el.style.backgroundClip = 'text';
-});
-
-// ─────────── ABAAD PRODUCTS ───────────
+// ── ABAAD PRODUCTS ──
 let allAbaadProducts = [];
-let editingAbaadId   = null;
+let editingAbaadId = null;
 
 function loadAbaadProducts() {
   db.collection('abaad_products').orderBy('createdAt','desc').onSnapshot(snap => {
     allAbaadProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderAbaadTable();
-    updateAbaadStats();
+    renderAbaadTable(); updateAbaadStats();
   }, () => {
     db.collection('abaad_products').onSnapshot(snap => {
       allAbaadProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderAbaadTable();
-      updateAbaadStats();
+      renderAbaadTable(); updateAbaadStats();
     });
   });
 }
 
 function updateAbaadStats() {
-  const active = allAbaadProducts.filter(p => p.active).length;
   const elT = document.getElementById('stat-abaad-total');
   const elA = document.getElementById('stat-abaad-active');
   const elR = document.getElementById('stat-abaad-regs');
   if (elT) elT.textContent = allAbaadProducts.length;
-  if (elA) elA.textContent = active;
-  if (elR) elR.textContent = (allLeads || []).filter(l => l.source === 'abaad_product').length;
+  if (elA) elA.textContent = allAbaadProducts.filter(p => p.active).length;
+  if (elR) elR.textContent = (allLeads||[]).filter(l => l.source === 'abaad_product').length;
 }
 
 function renderAbaadTable() {
   const tbody = document.getElementById('abaad-tbody');
   if (!tbody) return;
-  if (allAbaadProducts.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">No Abaad offers yet — click "Add Abaad Offer" to get started.</td></tr>`;
+  if (!allAbaadProducts.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">${t('لا توجد عروض أبعاد — اضغط "إضافة عرض أبعاد"','No Abaad offers yet — click "Add Abaad Offer" to get started.')}</td></tr>`;
     return;
   }
   tbody.innerHTML = allAbaadProducts.map(p => {
     const imgCell = p.imageUrl
-      ? `<img src="${p.imageUrl}" alt="" style="width:64px;height:48px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,0.09);" onerror="this.style.display='none'">`
-      : `<div style="width:64px;height:48px;background:rgba(255,255,255,0.04);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;border:1px solid rgba(255,255,255,0.07);">🖼️</div>`;
+      ? `<img src="${p.imageUrl}" alt="" style="width:64px;height:48px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,.09);" onerror="this.style.display='none'">`
+      : `<div style="width:64px;height:48px;background:rgba(255,255,255,.04);border-radius:6px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.07);">
+          <svg width="20" height="20" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+         </div>`;
     const priceCell = p.newPrice
-      ? `<div style="white-space:nowrap;"><strong style="color:var(--gold-light);">${Number(p.newPrice).toLocaleString()} SAR</strong>${p.oldPrice ? `<br><s style="font-size:12px;color:var(--text-muted);">${Number(p.oldPrice).toLocaleString()} SAR</s>` : ''}</div>`
+      ? `<strong style="color:var(--gold-l);">${Number(p.newPrice).toLocaleString()} SAR</strong>${p.oldPrice?`<br><s style="font-size:11px;color:var(--text-muted);">${Number(p.oldPrice).toLocaleString()} SAR</s>`:''}`
       : '—';
     const linkCell = p.signupLink
-      ? `<a href="${p.signupLink}" target="_blank" style="color:var(--gold);font-size:12px;text-decoration:none;word-break:break-all;">${p.signupLink.length > 32 ? p.signupLink.substring(0,32)+'…' : p.signupLink}</a>`
+      ? `<a href="${p.signupLink}" target="_blank" style="color:var(--gold);font-size:12px;text-decoration:none;">${p.signupLink.length>32?p.signupLink.substring(0,32)+'…':p.signupLink}</a>`
       : '—';
     const statusBadge = p.active
-      ? `<span class="badge badge-green"><span style="width:5px;height:5px;background:currentColor;border-radius:50%;display:inline-block;"></span>Live</span>`
-      : `<span class="badge badge-red"><span style="width:5px;height:5px;background:currentColor;border-radius:50%;display:inline-block;"></span>Hidden</span>`;
-    const safeTitle = (p.title || p.titleEn || '').replace(/'/g,"\\'");
-
+      ? `<span class="badge badge-green"><span class="badge-dot"></span>${t('نشط','Live')}</span>`
+      : `<span class="badge badge-red"><span class="badge-dot"></span>${t('مخفي','Hidden')}</span>`;
+    const title = adminLang==='ar' ? (p.title||p.titleEn||'—') : (p.titleEn||p.title||'—');
+    const safeId = p.id;
+    const safeTitle = (p.title||p.titleEn||'').replace(/'/g,"\\'");
     return `<tr>
       <td>${imgCell}</td>
-      <td>
-        <div style="font-weight:600;max-width:180px;white-space:normal;line-height:1.4;">${p.title || p.titleEn || '—'}</div>
-        ${p.titleEn && p.title ? `<div style="font-size:11px;color:var(--text-muted);">${p.titleEn}</div>` : ''}
-      </td>
-      <td>${priceCell}</td>
+      <td><div style="font-weight:600;max-width:180px;white-space:normal;line-height:1.4;">${title}</div></td>
+      <td style="white-space:nowrap;">${priceCell}</td>
       <td>${linkCell}</td>
       <td>${statusBadge}</td>
-      <td>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-ghost btn-sm" onclick="editAbaadProduct('${p.id}')">Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteAbaadProduct('${p.id}','${safeTitle}')">Delete</button>
-        </div>
-      </td>
+      <td><div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="editAbaadProduct('${safeId}')">${t('تعديل','Edit')}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteAbaadProduct('${safeId}','${safeTitle}')">${t('حذف','Delete')}</button>
+      </div></td>
     </tr>`;
   }).join('');
 }
 
 function openAbaadModal(id) {
   editingAbaadId = id || null;
-  document.getElementById('abaad-modal-title').textContent  = id ? 'Edit Abaad Offer' : 'Add Abaad Offer';
-  document.getElementById('abaad-save-btn').textContent     = id ? 'Update Offer' : 'Save Offer';
-  document.getElementById('abaad-save-btn').disabled        = false;
-
+  document.getElementById('abaad-modal-title').textContent = id ? t('تعديل عرض أبعاد','Edit Abaad Offer') : t('إضافة عرض أبعاد','Add Abaad Offer');
+  const saveBtn = document.getElementById('abaad-save-btn');
+  saveBtn.querySelector('.ar-only').textContent = id ? 'تحديث العرض' : 'حفظ العرض';
+  saveBtn.querySelector('.en-only').textContent = id ? 'Update Offer' : 'Save Offer';
+  saveBtn.disabled = false;
   if (id) {
     const p = allAbaadProducts.find(x => x.id === id);
     if (!p) return;
-    document.getElementById('af-title-ar').value    = p.title         || '';
-    document.getElementById('af-title-en').value    = p.titleEn       || '';
-    document.getElementById('af-desc-ar').value     = p.description   || '';
-    document.getElementById('af-desc-en').value     = p.descriptionEn || '';
-    document.getElementById('af-image').value       = p.imageUrl      || '';
-    document.getElementById('af-new-price').value   = p.newPrice      || '';
-    document.getElementById('af-old-price').value   = p.oldPrice      || '';
-    document.getElementById('af-link').value        = p.signupLink    || '';
-    document.getElementById('af-active').checked   = !!p.active;
+    document.getElementById('af-title-ar').value  = p.title         || '';
+    document.getElementById('af-title-en').value  = p.titleEn       || '';
+    document.getElementById('af-desc-ar').value   = p.description   || '';
+    document.getElementById('af-desc-en').value   = p.descriptionEn || '';
+    document.getElementById('af-image').value     = p.imageUrl      || '';
+    document.getElementById('af-new-price').value = p.newPrice      || '';
+    document.getElementById('af-old-price').value = p.oldPrice      || '';
+    document.getElementById('af-link').value      = p.signupLink    || '';
+    document.getElementById('af-active').checked  = !!p.active;
     previewAbaadImage();
   } else {
     document.getElementById('abaad-form').reset();
     document.getElementById('af-active').checked = true;
     document.getElementById('af-image-preview').style.display = 'none';
   }
-
   document.getElementById('abaad-modal-overlay').style.display = 'flex';
   setTimeout(() => document.getElementById('af-title-ar').focus(), 60);
 }
@@ -1414,44 +1396,81 @@ function closeAbaadModal() {
   editingAbaadId = null;
 }
 
-// ─────────── OFFICE INQUIRIES ───────────
+function previewAbaadImage() {
+  const url = document.getElementById('af-image').value.trim();
+  const preview = document.getElementById('af-image-preview');
+  const img = document.getElementById('af-image-preview-img');
+  if (url) { img.src = url; preview.style.display = 'block'; }
+  else { preview.style.display = 'none'; }
+}
+
+async function saveAbaadProduct(e) {
+  e.preventDefault();
+  const btn = document.getElementById('abaad-save-btn');
+  btn.disabled = true;
+  const data = {
+    title:         document.getElementById('af-title-ar').value.trim(),
+    titleEn:       document.getElementById('af-title-en').value.trim(),
+    description:   document.getElementById('af-desc-ar').value.trim(),
+    descriptionEn: document.getElementById('af-desc-en').value.trim(),
+    imageUrl:      document.getElementById('af-image').value.trim(),
+    newPrice:      parseFloat(document.getElementById('af-new-price').value) || 0,
+    oldPrice:      parseFloat(document.getElementById('af-old-price').value) || 0,
+    signupLink:    document.getElementById('af-link').value.trim(),
+    active:        document.getElementById('af-active').checked,
+  };
+  try {
+    if (editingAbaadId) {
+      await db.collection('abaad_products').doc(editingAbaadId).update(data);
+      toast(t('تم تحديث عرض أبعاد!','Abaad offer updated!'), 'success');
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('abaad_products').add(data);
+      toast(t('تم إضافة العرض!','Abaad offer added — live on landing page!'), 'success');
+    }
+    closeAbaadModal();
+  } catch(err) {
+    toast(t('خطأ: ','Error: ') + err.message, 'error');
+  }
+  btn.disabled = false;
+}
+
+async function deleteAbaadProduct(id, title) {
+  if (!confirm(t(`حذف "${title}"? لا يمكن التراجع.`,`Delete "${title}"? This cannot be undone.`))) return;
+  try {
+    await db.collection('abaad_products').doc(id).delete();
+    toast(t(`تم حذف "${title}"`,`"${title}" deleted.`), 'success');
+  } catch(err) { toast(t('فشل الحذف: ','Delete failed: ') + err.message, 'error'); }
+}
+
+// ── OFFICE INQUIRIES ──
 let allInquiries = [];
 
 function loadInquiries() {
-  db.collection('office_inquiries').orderBy('submittedAt', 'desc')
-    .onSnapshot(snap => {
+  db.collection('office_inquiries').orderBy('submittedAt','desc').onSnapshot(snap => {
+    allInquiries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderInquiriesTable(); updateInquiryStats();
+    const badge = document.getElementById('inq-badge');
+    if (badge && allInquiries.length > 0) { badge.textContent = allInquiries.length; badge.style.display = 'inline'; }
+  }, () => {
+    db.collection('office_inquiries').get().then(snap => {
       allInquiries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderInquiriesTable();
-      updateInquiryStats();
-      // Show badge on nav if there are inquiries
-      const badge = document.getElementById('inq-badge');
-      if (badge && allInquiries.length > 0) {
-        badge.textContent = allInquiries.length;
-        badge.style.display = 'inline';
-      }
-    }, err => {
-      db.collection('office_inquiries').orderBy('submittedAt', 'desc').get().then(snap => {
-        allInquiries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderInquiriesTable();
-        updateInquiryStats();
-      });
+      renderInquiriesTable(); updateInquiryStats();
     });
+  });
 }
 
 function updateInquiryStats() {
-  const total = allInquiries.length;
-  const weekAgo = Date.now() - 7 * 864e5;
+  const weekAgo = Date.now() - 7*864e5;
   const thisWeek = allInquiries.filter(i => {
     const ts = i.submittedAt ? (i.submittedAt.toMillis ? i.submittedAt.toMillis() : i.submittedAt) : 0;
     return ts > weekAgo;
   }).length;
-  // Most requested office
   const counts = {};
-  allInquiries.forEach(i => { if (i.officeName) counts[i.officeName] = (counts[i.officeName] || 0) + 1; });
+  allInquiries.forEach(i => { if(i.officeName) counts[i.officeName] = (counts[i.officeName]||0)+1; });
   const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
-
   const el = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
-  el('stat-inq-total', total);
+  el('stat-inq-total', allInquiries.length);
   el('stat-inq-week', thisWeek);
   el('stat-inq-top', top ? `${top[0]} (${top[1]})` : '—');
 }
@@ -1459,27 +1478,29 @@ function updateInquiryStats() {
 function renderInquiriesTable() {
   const tbody = document.getElementById('inq-tbody');
   if (!tbody) return;
-  if (allInquiries.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">No inquiries yet — they'll appear here when visitors submit the form</td></tr>`;
+  if (!allInquiries.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">${t('لا توجد استفسارات بعد','No inquiries yet — they\'ll appear here when visitors submit the form')}</td></tr>`;
     return;
   }
   tbody.innerHTML = allInquiries.map(inq => {
     const ts = inq.submittedAt ? (inq.submittedAt.toMillis ? inq.submittedAt.toMillis() : inq.submittedAt) : 0;
-    const dateStr = ts ? new Date(ts).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
-    const msg = inq.message ? `<span title="${inq.message.replace(/"/g,'&quot;')}" style="cursor:help;border-bottom:1px dashed rgba(255,255,255,0.2);">${inq.message.substring(0,40)}${inq.message.length>40?'…':''}</span>` : '<span style="color:var(--text-muted);">—</span>';
+    const dateStr = ts ? new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    const msg = inq.message
+      ? `<span title="${inq.message.replace(/"/g,'&quot;')}" style="cursor:help;border-bottom:1px dashed rgba(255,255,255,.2);">${inq.message.substring(0,40)}${inq.message.length>40?'…':''}</span>`
+      : '<span style="color:var(--text-muted);">—</span>';
     const phone = inq.phone ? `<a href="tel:${inq.phone}" style="color:var(--gold);text-decoration:none;">${inq.phone}</a>` : '—';
     const email = inq.email ? `<a href="mailto:${inq.email}" style="color:var(--gold);text-decoration:none;font-size:12px;">${inq.email}</a>` : '<span style="color:var(--text-muted);">—</span>';
-    const office = inq.officeName || inq.officeId || '<span style="color:var(--text-muted);">—</span>';
+    const office = inq.officeName || inq.officeId || '—';
     return `<tr>
-      <td style="font-weight:600;">${inq.name || '—'}</td>
+      <td style="font-weight:500;">${inq.name||'—'}</td>
       <td>${phone}</td>
       <td>${email}</td>
-      <td><span style="background:rgba(196,148,42,.10);border:1px solid rgba(196,148,42,.22);padding:3px 10px;border-radius:12px;font-size:12px;color:var(--gold);">${office}</span></td>
+      <td><span style="background:rgba(196,148,42,.1);border:1px solid rgba(196,148,42,.22);padding:3px 10px;border-radius:12px;font-size:12px;color:var(--gold);">${office}</span></td>
       <td>${msg}</td>
       <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">${dateStr}</td>
       <td>
-        <button class="btn btn-ghost btn-sm" onclick="deleteInquiry('${inq.id}')" style="color:var(--red);border-color:rgba(255,80,80,.2);" title="Delete">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        <button class="btn btn-danger btn-sm" onclick="deleteInquiry('${inq.id}')" title="${t('حذف','Delete')}">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
         </button>
       </td>
     </tr>`;
@@ -1487,100 +1508,36 @@ function renderInquiriesTable() {
 }
 
 async function deleteInquiry(id) {
-  if (!confirm('Delete this inquiry? This cannot be undone.')) return;
+  if (!confirm(t('حذف هذا الاستفسار؟ لا يمكن التراجع.','Delete this inquiry? This cannot be undone.'))) return;
   try {
     await db.collection('office_inquiries').doc(id).delete();
-    toast('Inquiry deleted.', 'success');
+    toast(t('تم حذف الاستفسار.','Inquiry deleted.'), 'success');
   } catch(err) { toast('Error: ' + err.message, 'error'); }
 }
 
 function exportInquiriesCSV() {
-  if (!allInquiries.length) { toast('No inquiries to export.', 'error'); return; }
+  if (!allInquiries.length) { toast(t('لا يوجد بيانات','No inquiries to export.'), 'error'); return; }
   const rows = [['Name','Phone','Email','Office','Message','Date']];
   allInquiries.forEach(i => {
     const ts = i.submittedAt ? (i.submittedAt.toMillis ? i.submittedAt.toMillis() : i.submittedAt) : 0;
-    const d = ts ? new Date(ts).toLocaleString('en-GB') : '';
-    rows.push([i.name||'', i.phone||'', i.email||'', i.officeName||i.officeId||'', (i.message||'').replace(/,/g,';'), d]);
+    rows.push([i.name||'',i.phone||'',i.email||'',i.officeName||i.officeId||'',(i.message||'').replace(/,/g,';'),ts?new Date(ts).toLocaleString('en-GB'):'']);
   });
-  const csv = rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
   a.download = `abaad-inquiries-${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
 }
 
-function previewOfferImage() {
-  const url     = document.getElementById('f-image').value.trim();
-  const preview = document.getElementById('f-image-preview');
-  const img     = document.getElementById('f-image-preview-img');
-  if (url) {
-    img.src = url;
-    preview.style.display = 'block';
-  } else {
-    preview.style.display = 'none';
-  }
-}
-
-function previewAbaadImage() {
-  const url     = document.getElementById('af-image').value.trim();
-  const preview = document.getElementById('af-image-preview');
-  const img     = document.getElementById('af-image-preview-img');
-  if (url) {
-    img.src = url;
-    preview.style.display = 'block';
-  } else {
-    preview.style.display = 'none';
-  }
-}
-
-async function saveAbaadProduct(e) {
-  e.preventDefault();
-  const btn = document.getElementById('abaad-save-btn');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
-  const data = {
-    title:          document.getElementById('af-title-ar').value.trim(),
-    titleEn:        document.getElementById('af-title-en').value.trim(),
-    description:    document.getElementById('af-desc-ar').value.trim(),
-    descriptionEn:  document.getElementById('af-desc-en').value.trim(),
-    imageUrl:       document.getElementById('af-image').value.trim(),
-    newPrice:       parseFloat(document.getElementById('af-new-price').value) || 0,
-    oldPrice:       parseFloat(document.getElementById('af-old-price').value) || 0,
-    signupLink:     document.getElementById('af-link').value.trim(),
-    active:         document.getElementById('af-active').checked,
-  };
-
-  try {
-    if (editingAbaadId) {
-      await db.collection('abaad_products').doc(editingAbaadId).update(data);
-      toast('Abaad offer updated!', 'success');
-    } else {
-      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      await db.collection('abaad_products').add(data);
-      toast('Abaad offer added — live on landing page!', 'success');
-    }
-    btn.disabled = false;
-    btn.textContent = editingAbaadId ? 'Update Offer' : 'Save Offer';
-    closeAbaadModal();
-  } catch(err) {
-    console.error(err);
-    toast('Error: ' + err.message, 'error');
-    btn.disabled = false;
-    btn.textContent = editingAbaadId ? 'Update Offer' : 'Save Offer';
-  }
-}
-
-async function deleteAbaadProduct(id, title) {
-  if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
-  try {
-    await db.collection('abaad_products').doc(id).delete();
-    toast(`"${title}" deleted.`, 'success');
-  } catch(err) {
-    toast('Delete failed: ' + err.message, 'error');
-  }
-}
-
+// Apply gold gradient to stat values on first render
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.sv-gold').forEach(el => {
+    el.style.background = 'linear-gradient(135deg,#F0D98A,#C8A951)';
+    el.style.webkitBackgroundClip = 'text';
+    el.style.webkitTextFillColor = 'transparent';
+    el.style.backgroundClip = 'text';
+  });
+});
 </script>
 </body>
 </html>

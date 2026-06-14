@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="html-root">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أبعاد | بوابة التحقق للشركاء</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C4942A;--gold-l:#E8B84B;--gold-d:#8B6914;
+  --bg:#0C0800;--bg2:#100C00;
+  --cream:#F5E4C0;--cream2:rgba(245,228,192,.72);--cream3:rgba(245,228,192,.42);
+  --glass:rgba(255,235,170,.05);--glass-b:rgba(196,148,42,.18);
+  --card-bg:rgba(255,235,170,.04);
+  --ease-out:cubic-bezier(.22,1,.36,1);
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--cream);
+  font-family:'Jost','Noto Sans Arabic',sans-serif;line-height:1.65}
+[lang="ar"] .en-only{display:none}
+[lang="en"] .ar-only{display:none}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--gold-d);border-radius:2px}
+
+/* ── HEADER ── */
+.v-header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(12,8,0,.96);border-bottom:1px solid var(--glass-b);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.v-logo{display:flex;align-items:center;gap:10px}
+.v-logo-icon{
+  width:36px;height:36px;border-radius:8px;
+  background:linear-gradient(135deg,var(--gold-d),var(--gold));
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 2px 12px rgba(196,148,42,.25)}
+.v-logo-text{font-size:.95rem;font-weight:600;color:var(--gold)}
+.v-header-title{font-size:.85rem;color:var(--cream3);text-align:center}
+.v-lang-btn{
+  background:var(--glass);border:1px solid var(--glass-b);color:var(--cream2);
+  padding:6px 14px;border-radius:20px;font-size:.8rem;cursor:pointer;
+  transition:all .2s;font-family:inherit}
+.v-lang-btn:hover{background:rgba(196,148,42,.15);color:var(--gold);border-color:var(--gold-d)}
+
+/* ── MAIN LAYOUT ── */
+.v-wrap{max-width:980px;margin:0 auto;padding:32px 20px 60px}
+.v-section-title{
+  font-size:1.05rem;font-weight:600;color:var(--gold);
+  margin-bottom:16px;padding-bottom:8px;
+  border-bottom:1px solid var(--glass-b);display:flex;align-items:center;gap:8px}
+
+/* ── VERIFY CARD ── */
+.v-verify-card{
+  background:var(--card-bg);border:1px solid var(--glass-b);
+  border-radius:16px;padding:28px;margin-bottom:36px;
+  backdrop-filter:blur(10px)}
+.v-verify-card h2{
+  font-size:1.25rem;font-weight:700;color:var(--cream);margin-bottom:6px}
+.v-verify-card p{font-size:.875rem;color:var(--cream3);margin-bottom:24px}
+.v-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+@media(max-width:520px){.v-fields{grid-template-columns:1fr}}
+.v-field label{display:block;font-size:.78rem;color:var(--cream3);margin-bottom:6px;font-weight:500}
+.v-field input{
+  width:100%;background:rgba(255,235,170,.06);border:1px solid var(--glass-b);
+  color:var(--cream);border-radius:10px;padding:12px 14px;font-size:1rem;
+  font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s;
+  letter-spacing:.08em}
+.v-field input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(196,148,42,.12)}
+.v-field input::placeholder{color:var(--cream3);letter-spacing:0}
+.v-err{display:none;color:#e05252;font-size:.78rem;margin-top:5px}
+.btn-verify{
+  width:100%;background:linear-gradient(135deg,var(--gold-d),var(--gold));
+  color:#0C0800;border:none;border-radius:10px;padding:14px;
+  font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:opacity .2s,transform .15s;letter-spacing:.03em}
+.btn-verify:hover{opacity:.9;transform:translateY(-1px)}
+.btn-verify:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.v-verify-status{margin-top:14px;font-size:.85rem;text-align:center;min-height:20px}
+
+/* ── LOGIN SCREEN ── */
+#v-login{
+  position:fixed;inset:0;z-index:999;
+  background:radial-gradient(ellipse at 50% 0%,rgba(196,148,42,.06) 0%,var(--bg) 55%);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.v-login-card{
+  width:100%;max-width:380px;padding:40px 36px;
+  background:rgba(255,235,170,.04);
+  border:1px solid var(--glass-b);border-radius:20px;
+  text-align:center;position:relative;overflow:hidden;
+  box-shadow:0 40px 80px rgba(0,0,0,.5);
+}
+.v-login-card::before{
+  content:'';position:absolute;top:0;left:20px;right:20px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(196,148,42,.6),transparent);
+}
+.v-login-icon{
+  width:52px;height:52px;border-radius:14px;margin:0 auto 18px;
+  background:linear-gradient(135deg,var(--gold-d),var(--gold));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(196,148,42,.3);
+}
+.v-login-card h2{font-size:1.2rem;font-weight:700;margin-bottom:6px;}
+.v-login-card p{font-size:.85rem;color:var(--cream3);margin-bottom:24px;}
+.v-login-inp{
+  width:100%;background:rgba(255,235,170,.06);border:1px solid var(--glass-b);
+  color:var(--cream);border-radius:10px;padding:12px 14px;font-size:1rem;
+  font-family:inherit;outline:none;transition:border-color .2s;text-align:center;
+  letter-spacing:.05em;margin-bottom:10px;
+}
+.v-login-inp:focus{border-color:var(--gold);}
+.v-login-inp::placeholder{color:var(--cream3);letter-spacing:0;}
+.v-login-err{
+  display:none;color:#e05252;font-size:.78rem;margin-bottom:10px;
+}
+.btn-login{
+  width:100%;background:linear-gradient(135deg,var(--gold-d),var(--gold));
+  color:#0C0800;border:none;border-radius:10px;padding:13px;
+  font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:opacity .2s;
+}
+.btn-login:hover{opacity:.88;}
+
+/* ── RESULT POPUP ── */
+.v-popup-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;padding:20px}
+.v-popup-overlay.open{display:flex}
+.v-popup{
+  background:#130E00;border:1px solid var(--glass-b);border-radius:20px;
+  padding:32px 28px;max-width:420px;width:100%;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);animation:popIn .3s var(--ease-out)}
+@keyframes popIn{from{opacity:0;transform:scale(.92) translateY(12px)}to{opacity:1;transform:none}}
+.v-popup-icon{
+  width:60px;height:60px;border-radius:50%;margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;font-size:28px}
+.v-popup-icon.success{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3)}
+.v-popup-icon.used{background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3)}
+.v-popup-icon.error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3)}
+.v-popup h3{font-size:1.15rem;font-weight:700;text-align:center;margin-bottom:6px}
+.v-popup-meta{
+  background:rgba(196,148,42,.06);border:1px solid rgba(196,148,42,.12);
+  border-radius:10px;padding:14px;margin:16px 0}
+.v-popup-meta-row{display:flex;justify-content:space-between;align-items:center;gap:8px;
+  font-size:.85rem;padding:4px 0}
+.v-popup-meta-row:not(:last-child){border-bottom:1px solid rgba(196,148,42,.08);padding-bottom:8px;margin-bottom:4px}
+.v-popup-meta-label{color:var(--cream3)}
+.v-popup-meta-value{font-weight:600;color:var(--cream);text-align:left;direction:ltr}
+.v-popup-sub{font-size:.82rem;color:var(--cream3);text-align:center;margin-bottom:18px}
+.v-popup-actions{display:flex;flex-direction:column;gap:10px}
+.btn-confirm{
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+  color:#fff;border:none;border-radius:10px;padding:13px;
+  font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:opacity .2s}
+.btn-confirm:hover{opacity:.88}
+.btn-confirm:disabled{opacity:.45;cursor:not-allowed}
+.btn-close-popup{
+  background:transparent;border:1px solid var(--glass-b);color:var(--cream3);
+  border-radius:10px;padding:11px;font-size:.88rem;cursor:pointer;
+  font-family:inherit;transition:all .2s}
+.btn-close-popup:hover{background:rgba(255,255,255,.05);color:var(--cream)}
+.v-popup-done{text-align:center;padding:10px 0}
+.v-popup-done svg{margin-bottom:10px}
+.v-popup-done p{font-size:.88rem;color:var(--cream3)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="v-login">
+  <div class="v-login-card">
+    <div class="v-login-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0C0800" stroke-width="2.5">
+        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+      </svg>
+    </div>
+    <h2>
+      <span class="ar-only">بوابة الشركاء</span>
+      <span class="en-only">Partner Portal</span>
+    </h2>
+    <p>
+      <span class="ar-only">أدخل كلمة المرور للمتابعة</span>
+      <span class="en-only">Enter password to continue</span>
+    </p>
+    <input type="password" id="v-pw" class="v-login-inp" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter')doVerifyLogin()">
+    <div class="v-login-err" id="v-pw-err">
+      <span class="ar-only">كلمة المرور غير صحيحة</span>
+      <span class="en-only">Incorrect password</span>
+    </div>
+    <button class="btn-login" onclick="doVerifyLogin()">
+      <span class="ar-only">دخول</span>
+      <span class="en-only">Sign In</span>
+    </button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="v-header" id="v-header" style="display:none;">
+  <div class="v-logo">
+    <div class="v-logo-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0C0800" stroke-width="2.5">
+        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+      </svg>
+    </div>
+    <span class="v-logo-text ar-only">بوابة الشركاء</span>
+    <span class="v-logo-text en-only">Partner Portal</span>
+  </div>
+  <div class="v-header-title">
+    <span class="ar-only">أبعاد — التحقق من الكودات</span>
+    <span class="en-only">Abaad — Code Verification</span>
+  </div>
+  <button class="v-lang-btn" onclick="toggleLang()">EN / ع</button>
+</header>
+
+<!-- MAIN -->
+<main class="v-wrap" id="v-main" style="display:none;">
+
+  <!-- VERIFY SECTION -->
+  <div class="v-verify-card">
+    <h2>
+      <span class="ar-only">تحقق من كود الزائر</span>
+      <span class="en-only">Verify Visitor Code</span>
+    </h2>
+    <p>
+      <span class="ar-only">أدخل الكود الذي قدّمه الزائر وآخر 4 أرقام من رقم جواله للتحقق منه</span>
+      <span class="en-only">Enter the code the visitor presented and the last 4 digits of their phone number to verify</span>
+    </p>
+    <div class="v-fields">
+      <div class="v-field">
+        <label>
+          <span class="ar-only">الكود</span>
+          <span class="en-only">Code</span>
+        </label>
+        <input type="text" id="v-code" placeholder="XXXX-XXXX"
+          maxlength="9" autocomplete="off"
+          style="text-transform:uppercase;letter-spacing:.15em"
+          oninput="formatCode(this)">
+        <div class="v-err" id="v-code-err">
+          <span class="ar-only">الرجاء إدخال الكود كاملاً</span>
+          <span class="en-only">Please enter the full code</span>
+        </div>
+      </div>
+      <div class="v-field">
+        <label>
+          <span class="ar-only">آخر 4 أرقام من الجوال</span>
+          <span class="en-only">Last 4 digits of phone</span>
+        </label>
+        <input type="text" id="v-last4" placeholder="XXXX"
+          maxlength="4" inputmode="numeric" autocomplete="off">
+        <div class="v-err" id="v-last4-err">
+          <span class="ar-only">الرجاء إدخال 4 أرقام</span>
+          <span class="en-only">Please enter 4 digits</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn-verify" id="btn-verify" onclick="verifyCode()">
+      <span class="ar-only">تحقق الآن</span>
+      <span class="en-only">Verify Now</span>
+    </button>
+    <div class="v-verify-status" id="v-status"></div>
+  </div>
+
+
+</main>
+
+<!-- RESULT POPUP -->
+<div class="v-popup-overlay" id="result-popup">
+  <div class="v-popup" id="popup-inner">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<script>
+// ── FIREBASE ──
+const FB = {
+  apiKey:"AIzaSyBMil1i4ba4gIzpV4PGOUDZrPh5vWH3riI",
+  authDomain:"abaad-39b3c.firebaseapp.com",
+  projectId:"abaad-39b3c",
+  storageBucket:"abaad-39b3c.firebasestorage.app",
+  messagingSenderId:"750678331728",
+  appId:"1:750678331728:web:c3f4c7c5c678d87da51c55"
+};
+firebase.initializeApp(FB);
+const db = firebase.firestore();
+
+// ── PASSWORD ──
+const VERIFY_PASS = 'AbaadAdmins';
+
+function doVerifyLogin(){
+  const val = document.getElementById('v-pw').value;
+  if(val === VERIFY_PASS){
+    sessionStorage.setItem('abaad_verify','1');
+    document.getElementById('v-login').style.display  = 'none';
+    document.getElementById('v-header').style.display = '';
+    document.getElementById('v-main').style.display   = '';
+  } else {
+    document.getElementById('v-pw-err').style.display = 'block';
+    document.getElementById('v-pw').focus();
+  }
+}
+
+// Auto-login if session exists
+if(sessionStorage.getItem('abaad_verify') === '1'){
+  document.getElementById('v-login').style.display  = 'none';
+  document.getElementById('v-header').style.display = '';
+  document.getElementById('v-main').style.display   = '';
+}
+
+// ── LANGUAGE ──
+let lang = localStorage.getItem('abaad_lang') || 'ar';
+applyLang();
+
+function applyLang(){
+  document.getElementById('html-root').setAttribute('lang', lang);
+  document.getElementById('html-root').setAttribute('dir', lang==='ar'?'rtl':'ltr');
+  localStorage.setItem('abaad_lang', lang);
+}
+function toggleLang(){
+  lang = lang==='ar'?'en':'ar';
+  applyLang();
+}
+
+// ── CODE INPUT FORMATTER ──
+function formatCode(el){
+  let v = el.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+  if(v.length > 4) v = v.slice(0,4) + '-' + v.slice(4,8);
+  el.value = v;
+}
+
+// ── SHOW / HIDE ERRORS ──
+function showErr(id, show){
+  const el = document.getElementById(id);
+  if(el) el.style.display = show ? 'block' : 'none';
+}
+
+// ── VERIFY ──
+let pendingDocId = null;
+let pendingData  = null;
+
+async function verifyCode(){
+  const rawCode  = document.getElementById('v-code').value.trim().toUpperCase();
+  const last4    = document.getElementById('v-last4').value.trim();
+
+  let valid = true;
+  const codeOk  = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(rawCode);
+  const last4Ok = /^\d{4}$/.test(last4);
+
+  showErr('v-code-err',  !codeOk);
+  showErr('v-last4-err', !last4Ok);
+  if(!codeOk || !last4Ok){ return; }
+
+  const btn = document.getElementById('btn-verify');
+  btn.disabled = true;
+  const statusEl = document.getElementById('v-status');
+  statusEl.textContent = lang==='ar' ? 'جاري البحث...' : 'Searching...';
+
+  try{
+    const snap = await db.collection('claimed_codes')
+      .where('code','==',rawCode)
+      .where('phoneLast4','==',last4)
+      .limit(1)
+      .get();
+
+    if(snap.empty){
+      showPopup('not-found', null);
+    } else {
+      const doc  = snap.docs[0];
+      const data = doc.data();
+      pendingDocId = doc.id;
+      pendingData  = data;
+      if(data.status === 'used'){
+        showPopup('used', data);
+      } else {
+        showPopup('found', data);
+      }
+    }
+  } catch(err){
+    console.error(err);
+    statusEl.innerHTML = `<span style="color:#e05252">${lang==='ar'?'حدث خطأ، حاول مرة أخرى':'Error occurred, please try again'}</span>`;
+  } finally {
+    btn.disabled = false;
+    statusEl.textContent = '';
+  }
+}
+
+// ── POPUP RENDERER ──
+function showPopup(type, data){
+  const popup = document.getElementById('popup-inner');
+  const overlay = document.getElementById('result-popup');
+
+  if(type === 'found'){
+    const claimedDate = data.claimedAt?.toDate?.();
+    const dateStr = claimedDate
+      ? claimedDate.toLocaleDateString(lang==='ar'?'ar-SA':'en-GB',{year:'numeric',month:'short',day:'numeric'})
+      : '—';
+    popup.innerHTML = `
+      <div class="v-popup-icon success">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5">
+          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h3 style="color:#22c55e">
+        <span class="ar-only">كود صالح ✓</span>
+        <span class="en-only">Valid Code ✓</span>
+      </h3>
+      <div class="v-popup-meta">
+        <div class="v-popup-meta-row">
+          <span class="v-popup-meta-label ar-only">الزائر</span>
+          <span class="v-popup-meta-label en-only">Visitor</span>
+          <span class="v-popup-meta-value">${escHtml(data.visitorName||'—')}</span>
+        </div>
+        <div class="v-popup-meta-row">
+          <span class="v-popup-meta-label ar-only">العرض</span>
+          <span class="v-popup-meta-label en-only">Offer</span>
+          <span class="v-popup-meta-value">${escHtml(data.offerTitle||'—')}</span>
+        </div>
+        <div class="v-popup-meta-row">
+          <span class="v-popup-meta-label ar-only">الشركة</span>
+          <span class="v-popup-meta-label en-only">Company</span>
+          <span class="v-popup-meta-value">${escHtml(data.companyName||'—')}</span>
+        </div>
+        <div class="v-popup-meta-row">
+          <span class="v-popup-meta-label ar-only">تاريخ الحصول</span>
+          <span class="v-popup-meta-label en-only">Claimed on</span>
+          <span class="v-popup-meta-value">${dateStr}</span>
+        </div>
+      </div>
+      <p class="v-popup-sub">
+        <span class="ar-only">قدّم الخدمة للزائر ثم اضغط تأكيد الاستخدام</span>
+        <span class="en-only">Provide the service, then confirm the code as used</span>
+      </p>
+      <div class="v-popup-actions">
+        <button class="btn-confirm" id="btn-confirm" onclick="markUsed()">
+          <span class="ar-only">✓ تأكيد الاستخدام</span>
+          <span class="en-only">✓ Confirm & Mark as Used</span>
+        </button>
+        <button class="btn-close-popup" onclick="closePopup()">
+          <span class="ar-only">إغلاق</span>
+          <span class="en-only">Close</span>
+        </button>
+      </div>`;
+  } else if(type === 'used'){
+    const usedDate = data.usedAt?.toDate?.();
+    const usedStr = usedDate
+      ? usedDate.toLocaleDateString(lang==='ar'?'ar-SA':'en-GB',{year:'numeric',month:'short',day:'numeric'})
+      : '—';
+    popup.innerHTML = `
+      <div class="v-popup-icon used">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2.5">
+          <path d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h3 style="color:#eab308">
+        <span class="ar-only">تم الاستخدام مسبقاً</span>
+        <span class="en-only">Already Used</span>
+      </h3>
+      <div class="v-popup-meta">
+        <div class="v-popup-meta-row">
+          <span class="v-popup-meta-label ar-only">الزائر</span>
+          <span class="v-popup-meta-label en-only">Visitor</span>
+          <span class="v-popup-meta-value">${escHtml(data.visitorName||'—')}</span>
+        </div>
+        <div class="v-popup-meta-row">
+          <span class="v-popup-meta-label ar-only">تاريخ الاستخدام</span>
+          <span class="v-popup-meta-label en-only">Used on</span>
+          <span class="v-popup-meta-value">${usedStr}</span>
+        </div>
+      </div>
+      <p class="v-popup-sub" style="color:#e05252">
+        <span class="ar-only">هذا الكود استُخدم بالفعل ولا يمكن استخدامه مرة أخرى</span>
+        <span class="en-only">This code has already been used and cannot be redeemed again</span>
+      </p>
+      <div class="v-popup-actions">
+        <button class="btn-close-popup" onclick="closePopup()">
+          <span class="ar-only">إغلاق</span>
+          <span class="en-only">Close</span>
+        </button>
+      </div>`;
+  } else {
+    popup.innerHTML = `
+      <div class="v-popup-icon error">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5">
+          <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h3 style="color:#ef4444">
+        <span class="ar-only">كود غير صحيح</span>
+        <span class="en-only">Code Not Found</span>
+      </h3>
+      <p class="v-popup-sub" style="margin-top:10px">
+        <span class="ar-only">لا يوجد كود مطابق للمعلومات المدخلة. تأكد من الكود وآخر 4 أرقام من الجوال</span>
+        <span class="en-only">No matching code found. Double-check the code and the last 4 digits of the phone number</span>
+      </p>
+      <div class="v-popup-actions">
+        <button class="btn-close-popup" onclick="closePopup()">
+          <span class="ar-only">حاول مجدداً</span>
+          <span class="en-only">Try Again</span>
+        </button>
+      </div>`;
+  }
+
+  applyLang();
+  overlay.classList.add('open');
+}
+
+function closePopup(){
+  document.getElementById('result-popup').classList.remove('open');
+  pendingDocId = null;
+  pendingData  = null;
+}
+
+// ── MARK AS USED ──
+async function markUsed(){
+  if(!pendingDocId) return;
+  const btn = document.getElementById('btn-confirm');
+  if(btn) btn.disabled = true;
+
+  try{
+    await db.collection('claimed_codes').doc(pendingDocId).update({
+      status: 'used',
+      usedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    const popup = document.getElementById('popup-inner');
+    popup.innerHTML = `
+      <div class="v-popup-done">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <h3 style="color:#22c55e;margin-bottom:8px">
+          <span class="ar-only">تم تأكيد الاستخدام</span>
+          <span class="en-only">Confirmed!</span>
+        </h3>
+        <p>
+          <span class="ar-only">تم تسجيل استخدام الكود بنجاح. شكراً لتعاونكم</span>
+          <span class="en-only">The code has been marked as used. Thank you!</span>
+        </p>
+        <button class="btn-close-popup" onclick="closePopup()" style="margin-top:18px;width:100%">
+          <span class="ar-only">إغلاق</span>
+          <span class="en-only">Close</span>
+        </button>
+      </div>`;
+    applyLang();
+
+    // Reset inputs
+    document.getElementById('v-code').value = '';
+    document.getElementById('v-last4').value = '';
+  } catch(err){
+    console.error(err);
+    if(btn) btn.disabled = false;
+    alert(lang==='ar'?'حدث خطأ، حاول مجدداً':'Error occurred, please try again');
+  }
+}
+
+// ── HELPERS ──
+function escHtml(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── CLOSE POPUP ON OVERLAY CLICK ──
+document.getElementById('result-popup').addEventListener('click', function(e){
+  if(e.target === this) closePopup();
+});
+
+// ── ENTER KEY ON INPUTS ──
+['v-code','v-last4'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if(e.key === 'Enter') verifyCode();
+  });
+});
+
+// ── INIT ──
+</script>
+</body>
+</html>

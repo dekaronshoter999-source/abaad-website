@@ -911,7 +911,12 @@ body{background:var(--bg);color:var(--cream);overflow-x:hidden;
                 <span class="en-only">Phone Number *</span>
               </label>
               <input type="tel" id="int-phone" required
-                placeholder="" autocomplete="tel">
+                placeholder="05XXXXXXXX" autocomplete="tel"
+                maxlength="10" inputmode="numeric">
+              <div id="int-phone-err" style="display:none;color:#e05252;font-size:.78rem;margin-top:-10px;margin-bottom:10px;padding-right:2px">
+                <span class="ar-only">يجب أن يكون الرقم 10 أرقام ويبدأ بـ 05</span>
+                <span class="en-only">Phone must be 10 digits starting with 05</span>
+              </div>
             </div>
           </div>
           <div class="int-field">
@@ -921,6 +926,10 @@ body{background:var(--bg);color:var(--cream);overflow-x:hidden;
             </label>
             <input type="email" id="int-email"
               placeholder="" autocomplete="email">
+            <div id="int-email-err" style="display:none;color:#e05252;font-size:.78rem;margin-top:-10px;margin-bottom:10px;padding-right:2px">
+              <span class="ar-only">يرجى إدخال بريد إلكتروني صحيح</span>
+              <span class="en-only">Please enter a valid email address</span>
+            </div>
           </div>
           <div class="int-field">
             <label>
@@ -1797,15 +1806,37 @@ function closeInterestForm(){
   document.body.style.overflow = '';
 }
 
+function validateSaudiPhone(p){ return /^05\d{8}$/.test(p.replace(/\s/g,'')); }
+function validateEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+function setFieldError(id, show){
+  const el = document.getElementById(id);
+  if(el) el.style.display = show ? 'block' : 'none';
+}
+
 async function submitInterestForm(e){
   e.preventDefault();
   const name  = document.getElementById('int-name').value.trim();
-  const phone = document.getElementById('int-phone').value.trim();
+  const phone = document.getElementById('int-phone').value.replace(/\s/g,'');
   const email = document.getElementById('int-email').value.trim();
   const office= document.getElementById('int-office').value;
   const msg   = document.getElementById('int-message').value.trim();
 
-  if(!name || !phone){ return; }
+  let valid = true;
+  if(!name){ valid=false; }
+
+  const phoneOk = validateSaudiPhone(phone);
+  setFieldError('int-phone-err', !phoneOk);
+  if(!phoneOk) valid=false;
+
+  if(email && !validateEmail(email)){
+    setFieldError('int-email-err', true);
+    valid=false;
+  } else {
+    setFieldError('int-email-err', false);
+  }
+
+  if(!valid){ return; }
 
   const btn = document.getElementById('int-submit-btn');
   btn.disabled = true;
