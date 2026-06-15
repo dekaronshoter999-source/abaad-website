@@ -1061,7 +1061,6 @@ const db = firebase.firestore();
 const EMAILJS_PUBLIC_KEY  = 'Ap_QpuvjhVG6h6Dl1';
 const EMAILJS_SERVICE_ID  = 'service_iztm7uz';
 const EMAILJS_TEMPLATE_ID = 'template_ukxdqp6';
-const NOTIFY_EMAILS       = ['Lordiey123@gmail.com', 'gtooby@hotmail.com'];
 
 emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
@@ -1851,20 +1850,16 @@ async function submitInterestForm(e){
       submittedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // ── Send email notification to both addresses (non-blocking) ──
-    const emailPayload = {
+    // ── Notify admin: new office interest submitted ──
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
       visitor_name:    name,
       visitor_phone:   phone,
       visitor_email:   email || '—',
       office_name:     officeName || '—',
       visitor_message: msg || '—',
       submitted_at:    new Date().toLocaleString('ar-SA')
-    };
-    NOTIFY_EMAILS.forEach(addr => {
-      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-        ...emailPayload, to_email: addr
-      }).catch(e => console.warn('Email notification failed:', e));
-    });
+    }).then(() => console.log('Notification sent'))
+      .catch(e => console.warn('Email notification failed:', e));
 
     document.getElementById('int-form-state').style.display = 'none';
     document.getElementById('int-success-state').style.display = 'block';
