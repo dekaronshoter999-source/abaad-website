@@ -675,9 +675,19 @@ textarea.inp{resize:vertical;}
         <input type="url" id="f-location" class="inp" placeholder="https://maps.google.com/...">
         <div class="field-hint"><span class="ar-only">إذا أضفت رابطاً ظهر زر "عرض الموقع" في البطاقة</span><span class="en-only">If provided, a "Show Location" button appears on the offer card</span></div>
       </div>
-      <div class="field">
-        <label class="lbl"><span class="ar-only">رقم التواصل</span><span class="en-only">Contact Phone Number</span></label>
-        <input type="tel" id="f-phone" class="inp" placeholder="+966 5X XXX XXXX">
+      <div class="field-row" style="grid-template-columns:1fr 1fr;">
+        <div>
+          <label class="lbl"><span class="ar-only">رقم التواصل</span><span class="en-only">Contact Phone Number</span></label>
+          <input type="tel" id="f-phone" class="inp" placeholder="+966 5X XXX XXXX">
+        </div>
+        <div>
+          <label class="lbl">
+            <span class="ar-only">رقم واتساب الشريك</span>
+            <span class="en-only">Partner WhatsApp Number</span>
+          </label>
+          <input type="tel" id="f-whatsapp" class="inp" placeholder="05XXXXXXXX">
+          <div class="field-hint"><span class="ar-only">يُرسَل إليه العملاء بعد الحصول على الكود</span><span class="en-only">Clients are sent here after getting their code</span></div>
+        </div>
       </div>
       <div class="gold-divider"></div>
       <div class="field">
@@ -1012,8 +1022,9 @@ function openModal(id) {
     document.getElementById('f-offer-en').value   = o.offerText     || '';
     document.getElementById('f-offer-ar').value   = o.offerTextAr   || '';
     document.getElementById('f-image').value      = o.imageUrl      || '';
-    document.getElementById('f-location').value   = o.locationLink  || '';
-    document.getElementById('f-phone').value      = o.phone         || '';
+    document.getElementById('f-location').value   = o.locationLink    || '';
+    document.getElementById('f-phone').value      = o.phone           || '';
+    document.getElementById('f-whatsapp').value   = o.whatsappNumber  || '';
     document.getElementById('f-promo').value      = o.promoCode     || '';
     document.getElementById('f-validity').value   = o.validityDays  || 30;
     document.getElementById('f-max-claims').value = o.maxClaims     || 0;
@@ -1069,8 +1080,9 @@ async function saveOffer(e) {
     offerText:     document.getElementById('f-offer-en').value.trim(),
     offerTextAr:   document.getElementById('f-offer-ar').value.trim(),
     imageUrl:      document.getElementById('f-image').value.trim(),
-    locationLink:  document.getElementById('f-location').value.trim(),
-    phone:         document.getElementById('f-phone').value.trim(),
+    locationLink:    document.getElementById('f-location').value.trim(),
+    phone:           document.getElementById('f-phone').value.trim(),
+    whatsappNumber:  document.getElementById('f-whatsapp').value.trim(),
     promoCode:     document.getElementById('f-promo').value.trim().toUpperCase(),
     validityDays:  parseInt(document.getElementById('f-validity').value) || 30,
     maxClaims:     parseInt(document.getElementById('f-max-claims').value) || 0,
